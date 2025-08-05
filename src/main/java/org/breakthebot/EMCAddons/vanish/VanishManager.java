@@ -1,0 +1,65 @@
+package org.breakthebot.EMCAddons.vanish;
+
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+
+public class VanishManager {
+    private static Plugin plugin;
+
+    public static void init(Plugin pluginInstance) {
+        plugin = pluginInstance;
+    }
+
+    private static boolean checkImmune(Player player) {
+        return player.hasPermission("ly.skynet.see.specvanish");
+    }
+
+    private static boolean checkAllowed(Player player) {
+        return player.hasPermission("ly.skynet.specvanish");
+    }
+
+    private static boolean checkVanished(Player player) {
+        return checkAllowed(player) && player.getGameMode().equals(GameMode.SPECTATOR);
+    }
+
+    public static void vanish(Player staff) {
+        if (!checkAllowed(staff)) {
+            staff.sendMessage("§cYou do not have permission to go into vanish.");
+            return;
+        }
+        int total = 0;
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (!checkImmune(other)) {
+                other.hidePlayer(plugin, staff);
+                total++;
+            }
+        }
+        staff.sendMessage("§aYou are now vanished to " + total + " players.");
+    }
+
+    public static void reveal(Player staff) {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.showPlayer(plugin, staff);
+        }
+        staff.sendMessage("§aYou are now visible to players.");
+    }
+
+    public static void handleJoin(Player player) {
+        if (checkVanished(player)) {
+            if (player.getGameMode().equals(GameMode.SPECTATOR)) {
+                vanish(player);
+            } else {
+                reveal(player);
+            }
+        }
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.equals(player)) continue;
+            if (checkVanished(online) && !checkImmune(player)) {
+                player.hidePlayer(plugin, online);
+            }
+        }
+    }
+}
