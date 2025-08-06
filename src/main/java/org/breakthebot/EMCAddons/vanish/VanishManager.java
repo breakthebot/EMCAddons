@@ -68,9 +68,10 @@ public class VanishManager {
         if (checkVanished(player)) {
             vanish(player);
         }
+        if (checkImmune(player)) { return; }
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(player)) continue;
-            if (checkVanished(online) && !checkImmune(player)) {
+            if (checkVanished(online)) {
                 player.hidePlayer(plugin, online);
             }
         }
