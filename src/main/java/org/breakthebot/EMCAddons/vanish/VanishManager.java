@@ -66,11 +66,7 @@ public class VanishManager {
 
     public static void handleJoin(Player player) {
         if (checkVanished(player)) {
-            if (player.getGameMode().equals(GameMode.SPECTATOR)) {
-                vanish(player);
-            } else {
-                reveal(player);
-            }
+            vanish(player);
         }
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.equals(player)) continue;
