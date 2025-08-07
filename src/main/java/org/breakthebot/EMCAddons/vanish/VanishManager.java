@@ -20,10 +20,14 @@ package org.breakthebot.EMCAddons.vanish;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
 
-public class VanishManager {
+public class VanishManager implements Listener {
     private static Plugin plugin;
 
     public static void init(Plugin pluginInstance) {
@@ -75,5 +79,23 @@ public class VanishManager {
                 player.hidePlayer(plugin, online);
             }
         }
+    }
+
+    @EventHandler
+    public void onGameMode(PlayerGameModeChangeEvent event) {
+        Player player = event.getPlayer();
+        GameMode oldMode = player.getGameMode();
+        GameMode newMode = event.getNewGameMode();
+
+        if (newMode == GameMode.SPECTATOR) {
+            VanishManager.vanish(player);
+        } else if (oldMode == GameMode.SPECTATOR) {
+            VanishManager.reveal(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        VanishManager.handleJoin(event.getPlayer());
     }
 }
