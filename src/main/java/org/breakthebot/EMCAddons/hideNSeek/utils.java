@@ -19,17 +19,17 @@ package org.breakthebot.EMCAddons.hideNSeek;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.breakthebot.EMCAddons.events.manager;
+import org.breakthebot.EMCAddons.events.EventManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class Utils {
+public class utils {
 
     public static @Nullable HideNSeek getCurrentEvent() {
-        return manager.getInstance().getCurrent();
+        return EventManager.getInstance().getCurrent();
     }
 
     public static boolean isPlayer(Player player) {

@@ -17,3 +17,5 @@ permissions:
       eventmanager.event.end: true
       eventmanager.manage.players: true
       eventmanager.manage.hunters: true
+      eventmanager.broadcast: true
+      eventmanager.giveall: true

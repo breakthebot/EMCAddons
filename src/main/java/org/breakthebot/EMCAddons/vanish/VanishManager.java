@@ -20,10 +20,11 @@ package org.breakthebot.EMCAddons.vanish;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
 
-public class VanishManager {
+public class VanishManager implements Listener {
     private static Plugin plugin;
 
     public static void init(Plugin pluginInstance) {

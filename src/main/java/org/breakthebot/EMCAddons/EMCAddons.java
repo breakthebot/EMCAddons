@@ -17,7 +17,7 @@ package org.breakthebot.EMCAddons;
  * along with EMCAddons. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import org.breakthebot.EMCAddons.events.command;
+import org.breakthebot.EMCAddons.events.MainCMD;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -40,8 +40,8 @@ public final class EMCAddons extends JavaPlugin {
         VanishManager.init(this);
         getServer().getPluginManager().registerEvents(new VanishManager(), this);
 
-        getCommand("eventmanager").setExecutor(new command());
-        getCommand("eventmanager").setTabCompleter(new command());
+        getCommand("eventmanager").setExecutor(new MainCMD());
+        getCommand("eventmanager").setTabCompleter(new MainCMD());
 
         detectFolia();
     }

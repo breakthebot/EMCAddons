@@ -21,9 +21,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.breakthebot.EMCAddons.EMCAddons;
-import org.breakthebot.EMCAddons.hideNSeek.Listeners;
 import org.breakthebot.EMCAddons.hideNSeek.HideNSeek;
-import org.breakthebot.EMCAddons.hideNSeek.Utils;
+import org.breakthebot.EMCAddons.hideNSeek.Listeners;
+import org.breakthebot.EMCAddons.hideNSeek.utils;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,7 +90,7 @@ public class EventManager {
                         .color(NamedTextColor.GOLD)
                 );
 
-        Utils.broadcastGlobal(summary);
+        utils.broadcastGlobal(summary);
 
     }
     private static @NotNull Component getHover(String content, List<Player> players) {

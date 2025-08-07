@@ -25,7 +25,7 @@ import com.palmergames.bukkit.towny.TownyUniverse;
 import com.palmergames.bukkit.towny.object.Town;
 import org.breakthebot.EMCAddons.hideNSeek.HideNSeek;
 import org.breakthebot.EMCAddons.hideNSeek.Listeners;
-import org.breakthebot.EMCAddons.hideNSeek.Utils;
+import org.breakthebot.EMCAddons.hideNSeek.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -297,7 +297,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             return;
         }
         String msg = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        Utils.broadcastGlobal(msg);
+        utils.broadcastGlobal(msg);
     }
 
     public static void giveAll(Player player, String[] args) {
