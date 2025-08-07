@@ -3,3 +3,7 @@ version: '1.0'
 main: org.breakthebot.EMCAddons.EMCAddons
 api-version: '1.21'
 authors: [ Veyronity ]
+commands:
+  eventmanager:
+    aliases: ["em"]
+    description: Manage server hosted events

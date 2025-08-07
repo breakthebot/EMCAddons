@@ -24,7 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-public class events implements Listener {
+public class listener implements Listener {
 
     @EventHandler
     public void onGameMode(PlayerGameModeChangeEvent event) {

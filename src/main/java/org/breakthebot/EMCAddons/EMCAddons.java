@@ -17,17 +17,41 @@ package org.breakthebot.EMCAddons;
  * along with EMCAddons. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import org.breakthebot.EMCAddons.events.command;
+import org.breakthebot.EMCAddons.events.manager;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
-import org.breakthebot.EMCAddons.vanish.events;
+import org.breakthebot.EMCAddons.vanish.listener;
+import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EMCAddons extends JavaPlugin {
+    private static EMCAddons instance;
+
+    public static EMCAddons getInstance() {
+        return instance;
+    }
 
     @Override
     public void onEnable() {
+        instance = this;
         getLogger().info("Plugin started!");
         VanishManager.init(this);
-        getServer().getPluginManager().registerEvents(new events(), this);
+        getServer().getPluginManager().registerEvents(new listener(), this);
+
+        getCommand("eventmanager").setExecutor(new command());
+        getCommand("eventmanager").setTabCompleter(new command());
+
+        manager.currentEvents.add("hideNSeek");
+    }
+
+    public void eventRegister(Listener listener) {
+        Bukkit.getPluginManager().registerEvents(listener, instance);
+    }
+
+    public void eventUnregister(Listener listener) {
+        HandlerList.unregisterAll(listener);
     }
 
     @Override
