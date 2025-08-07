@@ -3,12 +3,10 @@ version: '1.0'
 main: org.breakthebot.EMCAddons.EMCAddons
 api-version: '1.21'
 authors: [ Veyronity ]
-<<<<<<< Updated upstream
-=======
 folia-supported: true
 commands:
   eventmanager:
-    aliases: ["em", "event"]
+    aliases: ["em"]
     description: Manage server hosted events
 permissions:
   eventmanager.admin:
@@ -19,9 +17,3 @@ permissions:
       eventmanager.event.end: true
       eventmanager.manage.players: true
       eventmanager.manage.hunters: true
-<<<<<<< Updated upstream
-      eventmanager.broadcast: true
->>>>>>> Stashed changes
-=======
-      eventmanager.broadcast: true
->>>>>>> Stashed changes
