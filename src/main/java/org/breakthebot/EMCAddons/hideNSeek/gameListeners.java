@@ -104,6 +104,8 @@ public class gameListeners implements Listener {
 
         if (current == null) return;
 
+        if (!current.getPlayers().contains(player)) return;
+
         Town deathTown = TownyAPI.getInstance().getTown(player.getLocation());
         if (deathTown == null || !deathTown.equals(current.getHostTown())) return;
 
