@@ -18,16 +18,16 @@ package org.breakthebot.EMCAddons;
  */
 
 import org.breakthebot.EMCAddons.events.command;
-import org.breakthebot.EMCAddons.events.manager;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
-import org.breakthebot.EMCAddons.vanish.listener;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EMCAddons extends JavaPlugin {
     private static EMCAddons instance;
+    public static boolean isFolia;
 
     public static EMCAddons getInstance() {
         return instance;
@@ -38,12 +38,12 @@ public final class EMCAddons extends JavaPlugin {
         instance = this;
         getLogger().info("Plugin started!");
         VanishManager.init(this);
-        getServer().getPluginManager().registerEvents(new listener(), this);
+        getServer().getPluginManager().registerEvents(new VanishManager(), this);
 
         getCommand("eventmanager").setExecutor(new command());
         getCommand("eventmanager").setTabCompleter(new command());
 
-        manager.currentEvents.add("hideNSeek");
+        detectFolia();
     }
 
     public void eventRegister(Listener listener) {
@@ -57,5 +57,29 @@ public final class EMCAddons extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Plugin shutdown");
+    }
+
+    private void detectFolia() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.scheduler.EntityScheduler");
+            getLogger().info("Folia environment detected.");
+            isFolia = true;
+        } catch (ClassNotFoundException e) {
+            getLogger().info("Running on standard Bukkit/Paper environment.");
+            isFolia = false;
+        }
+    }
+
+    public void runTaskDelayed(Player player, Runnable task, long duration) {
+        getLogger().info("runLater called for player: " + player.getName());
+        if (isFolia) {
+            player.getScheduler().runDelayed(this,
+                    scheduledTask -> task.run(),
+                    task,
+                    duration
+            );
+        } else {
+            Bukkit.getScheduler().runTaskLater(this, task, duration);
+        }
     }
 }
