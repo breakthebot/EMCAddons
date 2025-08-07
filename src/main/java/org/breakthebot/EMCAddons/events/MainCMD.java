@@ -33,6 +33,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +63,8 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             case "player" -> managePlayers(player, args);
             case "hunter" -> manageHunters(player, args);
             case "broadcast" -> broadcastEvent(player, args);
-            default -> player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter>").color(NamedTextColor.RED));
+            case "giveall" -> giveAll(player, args);
+            default -> player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter|broadcast|giveall>").color(NamedTextColor.RED));
         }
         return true;
     }
@@ -73,35 +75,33 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 !sender.hasPermission("eventmanager.event.start") &&
                         !sender.hasPermission("eventmanager.event.end") &&
                         !sender.hasPermission("eventmanager.manage.players") &&
-                        !sender.hasPermission("eventmanager.manage.hunters")
+                        !sender.hasPermission("eventmanager.manage.hunters") &&
+                        !sender.hasPermission("eventmanager.broadcast") &&
+                        !sender.hasPermission("eventmanager.giveall")
         ) {
             return List.of();
         }
 
         if (args.length == 1) {
-            return Stream.of("start", "end", "player", "hunter")
+            return Stream.of("start", "end", "player", "hunter", "broadcast", "giveall")
                     .filter(s -> s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
 
         if (args.length == 2) {
-            switch (args[0].toLowerCase()) {
-                case "start":
-                    return TownyUniverse.getInstance().getTowns().stream()
-                            .map(TownyObject::getName)
-                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                case "player":
-                    return Stream.of("add", "remove", "list", "disqualify")
-                            .filter(s -> s.startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                case "hunter":
-                    return Stream.of("add", "remove", "list")
-                            .filter(s -> s.startsWith(args[1].toLowerCase()))
-                            .collect(Collectors.toList());
-                case "end":
-                    return Collections.emptyList();
-            }
+            return switch (args[0].toLowerCase()) {
+                case "start" -> TownyUniverse.getInstance().getTowns().stream()
+                        .map(TownyObject::getName)
+                        .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+                case "player" -> Stream.of("add", "remove", "list", "disqualify")
+                        .filter(s -> s.startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+                case "hunter" -> Stream.of("add", "remove", "list")
+                        .filter(s -> s.startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+                default -> Collections.emptyList();
+            };
         }
 
         if (args.length == 3 && (args[0].equalsIgnoreCase("player") || args[0].equalsIgnoreCase("hunter"))) {
@@ -184,6 +184,10 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                     player.sendMessage(Component.text(target.getName() + " is already in the player list").color(NamedTextColor.RED));
                     return;
                 }
+                if (utils.isHunter(target)) {
+                    player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
+                    return;
+                }
                 list.add(target);
                 player.sendMessage(Component.text(target.getName() + " added from the player list").color(NamedTextColor.GREEN));
             }
@@ -253,6 +257,10 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                     player.sendMessage(Component.text(target.getName() + " is already in the hunters list").color(NamedTextColor.RED));
                     return;
                 }
+                if (utils.isPlayer(target)) {
+                    player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
+                    return;
+                }
                 list.add(target);
                 player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
             }
@@ -290,5 +298,35 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         }
         String msg = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         Utils.broadcastGlobal(msg);
+    }
+
+    public static void giveAll(Player player, String[] args) {
+        if (!player.hasPermission("eventmanager.giveall")) {
+            player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return;
+        }
+        String action = args[1];
+        List<Player> targets;
+        if (action.equalsIgnoreCase("player")) {
+            targets = utils.getPlayers();
+        } else if (action.equalsIgnoreCase("hunter")) {
+            targets = utils.getHunters();
+        } else {
+            player.sendMessage(Component.text("Invalid target audience chosen. <player|hunter>").color(NamedTextColor.RED));
+            return;
+        }
+
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        if (itemInHand.getType().isAir()) {
+            player.sendMessage(Component.text("You have no item in your main hand to duplicate.").color(NamedTextColor.RED));
+            return;
+        }
+
+        for (Player target : targets) {
+            ItemStack clonedItem = itemInHand.clone();
+            target.getInventory().addItem(clonedItem);
+            target.sendMessage(Component.text("You received loot from the event organisers!").color(NamedTextColor.GREEN));
+        }
+        player.sendMessage(Component.text("Gave item to " + targets.size() + " players.").color(NamedTextColor.GREEN));
     }
 }

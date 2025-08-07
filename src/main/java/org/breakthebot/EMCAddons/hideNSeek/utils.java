@@ -19,10 +19,42 @@ package org.breakthebot.EMCAddons.hideNSeek;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.breakthebot.EMCAddons.events.manager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class Utils {
+
+    public static @Nullable HideNSeek getCurrentEvent() {
+        return manager.getInstance().getCurrent();
+    }
+
+    public static boolean isPlayer(Player player) {
+        HideNSeek event = getCurrentEvent();
+        if (event == null) return false;
+        return event.getPlayers().contains(player);
+    }
+
+    public static boolean isHunter(Player player) {
+        HideNSeek event = getCurrentEvent();
+        if (event == null) return false;
+        return event.getHunters().contains(player);
+    }
+
+    public static List<Player> getPlayers() {
+        HideNSeek event = getCurrentEvent();
+        if (event == null) return List.of();
+        return event.getPlayers();
+    }
+
+    public static List<Player> getHunters() {
+        HideNSeek event = getCurrentEvent();
+        if (event == null) return List.of();
+        return event.getHunters();
+    }
 
     public static void broadcastPlayers(HideNSeek current, String msg) {
         for (Player player : current.getPlayers()) {
