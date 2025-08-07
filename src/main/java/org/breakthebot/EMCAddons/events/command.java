@@ -58,7 +58,7 @@ public class command implements CommandExecutor, TabCompleter {
             case "end" -> endEvent();
             case "player" -> managePlayers(player, args);
             case "hunter" -> manageHunters(player, args);
-            default -> player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager <start|end>");
+            default -> player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager <start|end|player|hunter>");
         }
         return true;
     }
