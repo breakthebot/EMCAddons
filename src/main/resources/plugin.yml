@@ -3,7 +3,17 @@ version: '1.0'
 main: org.breakthebot.EMCAddons.EMCAddons
 api-version: '1.21'
 authors: [ Veyronity ]
+folia-supported: true
 commands:
   eventmanager:
     aliases: ["em"]
     description: Manage server hosted events
+permissions:
+  eventmanager.admin:
+    default: op
+    description: Grant all eventmanager permissions
+    children:
+      eventmanager.event.start: true
+      eventmanager.event.end: true
+      eventmanager.manage.players: true
+      eventmanager.manage.hunters: true

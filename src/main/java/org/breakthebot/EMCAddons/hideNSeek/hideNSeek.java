@@ -26,8 +26,8 @@ import org.bukkit.event.Listener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class hideNSeek {
-    private String eventName = "hideNSeek";
+public class HideNSeek {
+    private final String eventName = "hideNSeek";
     private final Town hostTown;
     private List<Player> players;
     private List<Player> hunters;
@@ -35,13 +35,13 @@ public class hideNSeek {
     public Listener listenerInstance;
 
 
-    public hideNSeek(Town town) {
+    public HideNSeek(Town town) {
         this.hostTown = town;
         this.players = new ArrayList<>();
         this.hunters = new ArrayList<>();
         this.disqualified = new ArrayList<>();
 
-        this.listenerInstance = new gameListeners();
+        this.listenerInstance = new listeners();
         EMCAddons.getInstance().eventRegister(this.listenerInstance);
         manager.getInstance().setCurrent(this);
     }

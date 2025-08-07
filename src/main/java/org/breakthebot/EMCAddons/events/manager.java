@@ -17,16 +17,22 @@ package org.breakthebot.EMCAddons.events;
  * along with EMCAddons. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.breakthebot.EMCAddons.EMCAddons;
-import org.breakthebot.EMCAddons.hideNSeek.gameListeners;
-import org.breakthebot.EMCAddons.hideNSeek.hideNSeek;
+import org.breakthebot.EMCAddons.hideNSeek.listeners;
+import org.breakthebot.EMCAddons.hideNSeek.HideNSeek;
+import org.breakthebot.EMCAddons.hideNSeek.utils;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class manager {
     public static List<String> currentEvents = new ArrayList<>();
-    private hideNSeek current;
+    private HideNSeek current;
 
     private static manager instance;
     public static manager getInstance() {
@@ -34,19 +40,72 @@ public class manager {
         return instance;
     }
 
-    public void setCurrent(hideNSeek current) {
+    public void setCurrent(HideNSeek current) {
         currentEvents.add(current.getEventName());
         this.current = current;
     }
 
-    public hideNSeek getCurrent() {
+    public HideNSeek getCurrent() {
         return this.current;
     }
 
     public void endCurrent() {
-        currentEvents.remove(current.getEventName());
-        EMCAddons.getInstance().eventUnregister(current.getListenerInstance());
-        gameListeners.clearPending();
+        sendSummary(this.current);
+        currentEvents.remove(this.current.getEventName());
+        EMCAddons.getInstance().eventUnregister(this.current.getListenerInstance());
+        listeners.clearArrays();
         this.current = null;
     }
+
+    private void sendSummary(HideNSeek instance) {
+        List<Player> remainingPlayers = instance.getPlayers();
+        List<Player> disqualifiedPlayers = instance.getDisqualified();
+        List<Player> hunterPlayers = instance.getHunters();
+
+        int remaining = remainingPlayers.size();
+        int disqualified = disqualifiedPlayers.size();
+        int participants = remaining + disqualified;
+        int hunters = hunterPlayers.size();
+
+        Component standingHover = getHover("Standing Players:\n", remainingPlayers);
+
+        Component disqualifiedHover = getHover("Disqualified Players:\n", disqualifiedPlayers);
+
+        Component huntersHover = getHover("Hunters:\n", hunterPlayers);
+
+        Component summary = Component.text("The Hide & Seek event has come to an end! Some stats:\n")
+                .append(Component.text(remaining + " players stand!\n")
+                        .color(NamedTextColor.GOLD)
+                        .hoverEvent(HoverEvent.showText(standingHover))
+                )
+                .append(Component.text(disqualified + " players have been disqualified.\n")
+                        .color(NamedTextColor.DARK_RED)
+                        .hoverEvent(HoverEvent.showText(disqualifiedHover))
+                )
+                .append(Component.text(participants + " total participants, " + hunters + " total hunters.\n")
+                        .color(NamedTextColor.GRAY)
+                        .hoverEvent(HoverEvent.showText(huntersHover))
+                )
+                .append(Component.text("Thank you all for attending!")
+                        .color(NamedTextColor.GOLD)
+                );
+
+        utils.broadcastGlobal(summary);
+
+    }
+    private static @NotNull Component getHover(String content, List<Player> players) {
+        Component standingHover = Component.text(content);
+
+        if (players.isEmpty()) {
+            standingHover = standingHover.append(Component.text("\n- None"));
+        } else {
+            for (Player player : players) {
+                standingHover = standingHover
+                        .append(Component.text("\n- " + player.getName()));
+            }
+        }
+
+        return standingHover;
+    }
+
 }
