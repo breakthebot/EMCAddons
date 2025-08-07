@@ -19,5 +19,9 @@ permissions:
       eventmanager.event.end: true
       eventmanager.manage.players: true
       eventmanager.manage.hunters: true
+<<<<<<< Updated upstream
+      eventmanager.broadcast: true
+>>>>>>> Stashed changes
+=======
       eventmanager.broadcast: true
 >>>>>>> Stashed changes
