@@ -64,7 +64,8 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             case "hunter" -> manageHunters(player, args);
             case "broadcast" -> broadcastEvent(player, args);
             case "giveall" -> giveAll(player, args);
-            default -> player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter|broadcast|giveall>").color(NamedTextColor.RED));
+            case "status" -> status(player);
+            default -> player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter|broadcast|giveall|status>").color(NamedTextColor.RED));
         }
         return true;
     }
@@ -83,7 +84,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return Stream.of("start", "end", "player", "hunter", "broadcast", "giveall")
+            return Stream.of("start", "end", "player", "hunter", "broadcast", "giveall", "status")
                     .filter(s -> s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
@@ -98,6 +99,9 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         .filter(s -> s.startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
                 case "hunter" -> Stream.of("add", "remove", "list")
+                        .filter(s -> s.startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+                case "giveall" -> Stream.of("player", "hunter")
                         .filter(s -> s.startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
                 default -> Collections.emptyList();
@@ -161,65 +165,85 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String action = args[1].toLowerCase();
-        Player target = Bukkit.getPlayer(args[2]);
-        if (target == null) {
-            OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
-            if (!(offline instanceof Player)) {
-                player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
-                return;
-            }
-            target = (Player) offline;
+        if (args.length < 2) {
+            player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify> [player]").color(NamedTextColor.RED));
+            return;
         }
+
+        String action = args[1].toLowerCase();
         HideNSeek event = EventManager.getInstance().getCurrent();
         if (event == null) {
             player.sendMessage(Component.text("No active event found. Start one with /eventmanager start {town}").color(NamedTextColor.RED));
             return;
         }
+
         List<Player> list = event.getPlayers();
 
         switch (action) {
-            case "add" -> {
-                if (list.contains(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is already in the player list").color(NamedTextColor.RED));
-                    return;
-                }
-                if (utils.isHunter(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
-                    return;
-                }
-                list.add(target);
-                player.sendMessage(Component.text(target.getName() + " added from the player list").color(NamedTextColor.GREEN));
-            }
-            case "remove" -> {
-                if (!list.contains(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
-                    return;
-                }
-                list.remove(target);
-                player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
-            }
             case "list" -> {
                 if (list.isEmpty()) {
-                    player.sendMessage(Component.text("There are currently no registered players").color(NamedTextColor.GREEN));
+                    player.sendMessage(Component.text("There are currently no registered players").color(NamedTextColor.RED));
                     return;
                 }
                 String names = list.stream()
                         .map(Player::getName)
                         .collect(Collectors.joining(", "));
-                player.sendMessage(Component.text("There are currently " + list.size() + " registered players:\n" + names).color(NamedTextColor.GREEN));
+
+                Component msg = Component.text("There are currently " + list.size() + " registered players:\n")
+                        .color(NamedTextColor.GREEN)
+                        .append(Component.text(names)
+                                .color(NamedTextColor.YELLOW));
+                player.sendMessage(msg);
             }
-            case "disqualify" -> {
-                if (!list.contains(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
+
+            case "add", "remove", "disqualify" -> {
+                if (args.length < 3) {
+                    player.sendMessage(Component.text("You must specify a player name for this action.").color(NamedTextColor.RED));
                     return;
                 }
-                Listeners.handleDisqualified(target);
-                return;
+
+                Player target = Bukkit.getPlayer(args[2]);
+                if (target == null) {
+                    OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
+                    if (!(offline instanceof Player)) {
+                        player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
+                        return;
+                    }
+                    target = (Player) offline;
+                }
+
+                switch (action) {
+                    case "add" -> {
+                        if (list.contains(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is already in the player list").color(NamedTextColor.RED));
+                            return;
+                        }
+                        if (utils.isHunter(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
+                            return;
+                        }
+                        list.add(target);
+                        player.sendMessage(Component.text(target.getName() + " added to the player list").color(NamedTextColor.GREEN));
+                    }
+                    case "remove" -> {
+                        if (!list.contains(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
+                            return;
+                        }
+                        list.remove(target);
+                        player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
+                    }
+                    case "disqualify" -> {
+                        if (!list.contains(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
+                            return;
+                        }
+                        Listeners.handleDisqualified(target);
+                    }
+                }
             }
             default -> {
-                player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list> {player}").color(NamedTextColor.RED));
-                return;
+                player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify> [player]").color(NamedTextColor.RED));
             }
         }
         event.setPlayers(list);
@@ -230,66 +254,85 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
             return;
         }
-        if (args.length < 3) {
-            player.sendMessage(Component.text("Usage: /eventmanager hunter add|remove {hunter}").color(NamedTextColor.RED));
+
+        if (args.length < 2) {
+            player.sendMessage(Component.text("Usage: /eventmanager hunter <add|remove|list> [hunter]").color(NamedTextColor.RED));
             return;
         }
+
         String action = args[1].toLowerCase();
-        Player target = Bukkit.getPlayer(args[2]);
-        if (target == null) {
-            OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
-            if ((!(offline instanceof Player))) {
-                player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
-                return;
-            }
-            target = (Player) offline;
-        }
+
         HideNSeek event = EventManager.getInstance().getCurrent();
         if (event == null) {
             player.sendMessage(Component.text("No active event found. Start one with /eventmanager start {town}").color(NamedTextColor.RED));
             return;
         }
+
         List<Player> list = event.getHunters();
 
         switch (action) {
-            case "add" -> {
-                if (list.contains(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is already in the hunters list").color(NamedTextColor.RED));
-                    return;
-                }
-                if (utils.isPlayer(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
-                    return;
-                }
-                list.add(target);
-                player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
-            }
-            case "remove" -> {
-                if (!list.contains(target)) {
-                    player.sendMessage(Component.text(target.getName() + " is not in the hunters list").color(NamedTextColor.RED));
-                    return;
-                }
-                list.remove(target);
-                player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
-            }
             case "list" -> {
                 if (list.isEmpty()) {
-                    player.sendMessage(Component.text("There are currently no registered hunters").color(NamedTextColor.GREEN));
+                    player.sendMessage(Component.text("There are currently no registered hunters").color(NamedTextColor.RED));
                     return;
                 }
                 String names = list.stream()
                         .map(Player::getName)
                         .collect(Collectors.joining(", "));
-                player.sendMessage(Component.text("There are currently " + list.size() + " registered hunters:\n" + names).color(NamedTextColor.GREEN));
-                return;
+
+                Component msg = Component.text("There are currently " + list.size() + " registered hunters:\n")
+                        .color(NamedTextColor.GREEN)
+                        .append(Component.text(names)
+                                .color(NamedTextColor.YELLOW));
+
+                player.sendMessage(msg);
+            }
+            case "add", "remove" -> {
+                if (args.length < 3) {
+                    player.sendMessage(Component.text("You must specify a player name for this action.").color(NamedTextColor.RED));
+                    return;
+                }
+
+                Player target = Bukkit.getPlayer(args[2]);
+                if (target == null) {
+                    OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
+                    if (!(offline instanceof Player)) {
+                        player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
+                        return;
+                    }
+                    target = (Player) offline;
+                }
+
+                switch (action) {
+                    case "add" -> {
+                        if (list.contains(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is already in the hunters list").color(NamedTextColor.RED));
+                            return;
+                        }
+                        if (utils.isPlayer(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is a player.").color(NamedTextColor.RED));
+                            return;
+                        }
+                        list.add(target);
+                        player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
+                    }
+                    case "remove" -> {
+                        if (!list.contains(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is not in the hunters list").color(NamedTextColor.RED));
+                            return;
+                        }
+                        list.remove(target);
+                        player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
+                    }
+                }
             }
             default -> {
-                player.sendMessage(Component.text("Usage: /eventmanager hunter <add|remove|list> {hunter}").color(NamedTextColor.RED));
-                return;
+                player.sendMessage(Component.text("Usage: /eventmanager hunter <add|remove|list> [hunter]").color(NamedTextColor.RED));
             }
         }
         event.setHunters(list);
     }
+
 
     private void broadcastEvent(Player player, String[] args) {
         if (!player.hasPermission("eventmanager.broadcast")) {
@@ -303,6 +346,10 @@ public class MainCMD implements CommandExecutor, TabCompleter {
     public static void giveAll(Player player, String[] args) {
         if (!player.hasPermission("eventmanager.giveall")) {
             player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return;
+        }
+        if (args.length != 2) {
+            player.sendMessage(Component.text("Usage: /eventmanager giveall player|hunter").color(NamedTextColor.RED));
             return;
         }
         String action = args[1];
@@ -328,5 +375,22 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             target.sendMessage(Component.text("You received loot from the event organisers!").color(NamedTextColor.GREEN));
         }
         player.sendMessage(Component.text("Gave item to " + targets.size() + " players.").color(NamedTextColor.GREEN));
+    }
+
+    private void status(Player player) {
+        if (!player.hasPermission("eventmanager.status")) {
+            player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return;
+        }
+        HideNSeek current = utils.getCurrentEvent();
+        if (current == null) {
+            player.sendMessage(Component.text("No ongoing event.").color(NamedTextColor.RED));
+            return;
+        }
+        Component status = Component.text("Event Stats:\n")
+                .append(Component.text(current.getPlayers().size() + " players.\n").color(NamedTextColor.GREEN))
+                .append(Component.text(current.getHunters().size() + " hunters.\n").color(NamedTextColor.GOLD))
+                .append(Component.text(current.getDisqualified().size() + " disqualified.").color(NamedTextColor.RED));
+        player.sendMessage(status);
     }
 }
