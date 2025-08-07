@@ -126,14 +126,10 @@ public class Listeners implements Listener {
         current.setDisqualified(disqualifiedList);
 
         List<Player> playerList = current.getPlayers();
-        if (playerList.contains(player)) {
-            player.getInventory().clear();
-            player.getInventory().setArmorContents(new ItemStack[4]);
-            player.getInventory().setItemInOffHand(null);
-        }
-
         playerList.remove(player);
         current.setPlayers(playerList);
+
+        player.setHealth(0.0);
 
         utils.broadcastPlayers(current, player.getName() + " was disqualified!");
         utils.broadcastHunters(current, player.getName() + " was disqualified!");
@@ -240,12 +236,11 @@ public class Listeners implements Listener {
     public void onPlotChange(PlayerChangePlotEvent event) {
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
-
+        if (!utils.isPlayer(event.getPlayer())) return;
         TownBlock origin = event.getFrom().getTownBlockOrNull();
         if (origin == null) return;
         Town town = origin.getTownOrNull();
         if (town == null) return;
-
 
         TownBlock targetBlock = event.getTo().getTownBlockOrNull();
         Town targetTown = null;
