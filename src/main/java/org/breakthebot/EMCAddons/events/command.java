@@ -17,6 +17,7 @@ package org.breakthebot.EMCAddons.events;
  * along with EMCAddons. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.TownyUniverse;
@@ -49,16 +50,16 @@ public class command implements CommandExecutor, TabCompleter {
         if (!player.hasPermission("")) { return false; }
 
         if (args.length == 0) {
-            player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager <start|end>");
+            player.sendMessage(Component.text("Usage: /eventmanager <start|end>").color(NamedTextColor.RED));
             return false;
         }
 
         switch (args[0].toLowerCase()) {
             case "start" -> startEvent(player, args);
-            case "end" -> endEvent();
+            case "end" -> endEvent(player);
             case "player" -> managePlayers(player, args);
             case "hunter" -> manageHunters(player, args);
-            default -> player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager <start|end|player|hunter>");
+            default -> player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter>").color(NamedTextColor.RED));
         }
         return true;
     }
@@ -102,63 +103,111 @@ public class command implements CommandExecutor, TabCompleter {
 
 
     private void startEvent(Player player, String[] args) {
-        Town town = TownyAPI.getInstance().getTown(args[1]);
-        if (town == null) {
-            player.sendMessage(NamedTextColor.RED + "Invalid town name. Usage: /eventmanager start {town}");
+        if (args.length < 2) {
+            player.sendMessage(Component.text("Usage: /eventmanager start {town}").color(NamedTextColor.RED));
             return;
         }
-        new hideNSeek(town);
+        Town town = TownyAPI.getInstance().getTown(args[1]);
+        if (town == null) {
+            player.sendMessage(Component.text("Invalid town name. Usage: /eventmanager start {town}").color(NamedTextColor.RED));
+            return;
+        }
+
+        hideNSeek event = new hideNSeek(town);
+        manager.getInstance().setCurrent(event);
+        player.sendMessage(Component.text("Event started for town: " + town.getName()).color(NamedTextColor.GREEN));
     }
 
-    private void endEvent() {
+    private void endEvent(Player player) {
+    if (manager.getInstance().getCurrent() == null) {
+            player.sendMessage(Component.text("No active event to end.").color(NamedTextColor.RED));
+            return;
+        }
         manager.getInstance().endCurrent();
+        player.sendMessage(Component.text("Event ended successfully").color(NamedTextColor.GREEN));
     }
 
     private void managePlayers(Player player, String[] args) {
+        if (args.length < 3) {
+            player.sendMessage(Component.text("Usage: /eventmanager player add|remove {player}").color(NamedTextColor.RED));
+            return;
+        }
         String action = args[1].toLowerCase();
         Player target = Bukkit.getPlayer(args[2]);
         if (target == null) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
             if ((!(offline instanceof Player))) {
-                player.sendMessage(NamedTextColor.RED + "Invalid player specified.");
+                player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
                 return;
             }
             target = (Player) offline;
         }
         hideNSeek event = manager.getInstance().getCurrent();
+        if (event == null) {
+            player.sendMessage(Component.text("No active event found. Start one with /eventmanager start {town}").color(NamedTextColor.RED));
+            return;
+        }
         List<Player> list = event.getPlayers();
 
         if (action.equals("add")) {
-            list.add(target);
-        } else if (action.equals("remove")) {
+            if (list.contains(target)) {
+                player.sendMessage(Component.text(target.getName() + " is already in the player list").color(NamedTextColor.RED));
+                return;
+            }
             list.remove(target);
+            player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
+        } else if (action.equals("remove")) {
+            if (!list.contains(target)) {
+                player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
+                return;
+            }
+            list.remove(target);
+            player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
         } else {
-            player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager player add|remove {player}");
+            player.sendMessage(Component.text("Usage: /eventmanager player add|remove {player}").color(NamedTextColor.RED));
             return;
         }
         event.setPlayers(list);
     }
 
     private void manageHunters(Player player, String[] args) {
+        if (args.length < 3) {
+            player.sendMessage(Component.text("Usage: /eventmanager hunter add|remove {hunter}").color(NamedTextColor.RED));
+            return;
+        }
         String action = args[1].toLowerCase();
         Player target = Bukkit.getPlayer(args[2]);
         if (target == null) {
             OfflinePlayer offline = Bukkit.getOfflinePlayer(args[2]);
             if ((!(offline instanceof Player))) {
-                player.sendMessage(NamedTextColor.RED + "Invalid player specified.");
+                player.sendMessage(Component.text("Invalid player specified.").color(NamedTextColor.RED));
                 return;
             }
             target = (Player) offline;
         }
         hideNSeek event = manager.getInstance().getCurrent();
+        if (event == null) {
+            player.sendMessage(Component.text("No active event found. Start one with /eventmanager start {town}").color(NamedTextColor.RED));
+            return;
+        }
         List<Player> list = event.getHunters();
 
         if (action.equals("add")) {
+            if (list.contains(target)) {
+                player.sendMessage(Component.text(target.getName() + " is already in the hunters list").color(NamedTextColor.RED));
+                return;
+            }
             list.add(target);
+            player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
         } else if (action.equals("remove")) {
+            if (!list.contains(target)) {
+                player.sendMessage(Component.text(target.getName() + " is not in the hunters list").color(NamedTextColor.RED));
+                return;
+            }
             list.remove(target);
+            player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
         } else {
-            player.sendMessage(NamedTextColor.RED + "Usage: /eventmanager hunter add|remove {hunter}");
+            player.sendMessage(Component.text("Usage: /eventmanager hunter add|remove {hunter}").color(NamedTextColor.RED));
             return;
         }
         event.setHunters(list);

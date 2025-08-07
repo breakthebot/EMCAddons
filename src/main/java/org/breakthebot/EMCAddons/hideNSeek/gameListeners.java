@@ -22,12 +22,16 @@ import com.palmergames.bukkit.towny.TownyMessaging;
 import com.palmergames.bukkit.towny.object.Town;
 import org.breakthebot.EMCAddons.EMCAddons;
 import org.breakthebot.EMCAddons.events.manager;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -91,5 +95,26 @@ public class gameListeners implements Listener {
     @EventHandler
     public void onLogIn(PlayerJoinEvent event) {
         pendingDisqualification.remove(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        hideNSeek current = manager.getInstance().getCurrent();
+
+        if (current == null) return;
+
+        Town deathTown = TownyAPI.getInstance().getTown(player.getLocation());
+        if (deathTown == null || !deathTown.equals(current.getHostTown())) return;
+
+        Location deathLocation = player.getLocation();
+        World world = deathLocation.getWorld();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                LightningStrike lightning = world.strikeLightningEffect(deathLocation); // no fire, no damage
+            }
+        }.runTaskLater(EMCAddons.getInstance(), 20L * 60);
     }
 }
