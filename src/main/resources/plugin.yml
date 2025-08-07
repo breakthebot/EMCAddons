@@ -6,7 +6,7 @@ authors: [ Veyronity ]
 folia-supported: true
 commands:
   eventmanager:
-    aliases: ["em"]
+    aliases: ["em", "event"]
     description: Manage server hosted events
 permissions:
   eventmanager.admin:
