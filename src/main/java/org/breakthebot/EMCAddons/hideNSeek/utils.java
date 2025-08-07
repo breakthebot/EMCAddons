@@ -87,7 +87,7 @@ public class utils {
     }
     public static void broadcastGlobal(Component msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage("[Event Boradcast] " + msg);
+            player.sendMessage(msg);
         }
     }
 

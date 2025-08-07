@@ -73,7 +73,7 @@ public class EventManager {
 
         Component huntersHover = getHover("Hunters:\n", hunterPlayers);
 
-        Component summary = Component.text("The Hide & Seek event has come to an end! Some stats:\n")
+        Component summary = Component.text("[Event Broadcast] The Hide & Seek event has come to an end! Some stats:\n")
                 .append(Component.text(remaining + " players stand!\n")
                         .color(NamedTextColor.GOLD)
                         .hoverEvent(HoverEvent.showText(standingHover))
