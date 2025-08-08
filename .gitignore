@@ -119,7 +119,4 @@ runs/
 !gradle-wrapper.jar
 gradlew
 /gradle
-gradle.properties
-gradlew.bat
-settings.gradle
-build.gradle
+
