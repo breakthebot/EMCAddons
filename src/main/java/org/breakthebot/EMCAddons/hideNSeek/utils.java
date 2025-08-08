@@ -21,10 +21,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.breakthebot.EMCAddons.events.EventManager;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class utils {
 
@@ -44,6 +48,12 @@ public class utils {
         return event.getHunters().contains(player);
     }
 
+    public static boolean isDisqualified(Player player) {
+        HideNSeek event = getCurrentEvent();
+        if (event == null) return false;
+        return event.getDisqualified().contains(player);
+    }
+
     public static List<Player> getPlayers() {
         HideNSeek event = getCurrentEvent();
         if (event == null) return List.of();
@@ -56,9 +66,23 @@ public class utils {
         return event.getHunters();
     }
 
+    public static boolean hasItems(Player player) {
+        PlayerInventory inv = player.getInventory();
+
+        boolean hasInventoryItems = Arrays.stream(inv.getContents())
+                .anyMatch(item -> item != null && item.getType() != Material.AIR);
+        boolean hasArmorItems = Arrays.stream(inv.getArmorContents())
+                .anyMatch(item -> item != null && item.getType() != Material.AIR);
+        boolean hasOffhandItem = inv.getItemInOffHand().getType() != Material.AIR;
+        boolean hasCursorItem = player.getOpenInventory().getCursor().getType() != Material.AIR;
+
+        return hasInventoryItems || hasArmorItems || hasOffhandItem || hasCursorItem;
+    }
+
+
     public static void broadcastPlayers(HideNSeek current, String msg) {
         for (Player player : current.getPlayers()) {
-            Component broadcastMessage = Component.text("[Event Broadcast] ")
+            Component broadcastMessage = Component.text("[Player Broadcast] ")
                     .color(NamedTextColor.BLUE)
                     .append(Component.text(msg).color(NamedTextColor.GREEN));
 
@@ -89,6 +113,14 @@ public class utils {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.sendMessage(msg);
         }
+    }
+
+    public static void broadcastAdmins(Component msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.hasPermission("eventmanager.admin")) continue;
+            player.sendMessage(msg);
+        }
+
     }
 
 }

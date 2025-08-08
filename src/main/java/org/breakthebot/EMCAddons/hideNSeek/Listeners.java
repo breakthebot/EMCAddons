@@ -82,7 +82,7 @@ public class Listeners implements Listener {
 
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
-        if (current.getHunters().contains(attacker)) return;
+        if (utils.isHunter(attacker)) return;
 
         TownyAPI API = TownyAPI.getInstance();
         Town town1 = API.getTown(victim.getLocation());
@@ -99,7 +99,7 @@ public class Listeners implements Listener {
         HideNSeek current = getCurrentEvent();
         Player player = event.getPlayer();
         if (current == null) return;
-        if (!current.getPlayers().contains(player)) return;
+        if (!utils.isPlayer(player)) return;
         UUID uuid = player.getUniqueId();
         pendingDisqualification.add(uuid);
 
@@ -111,13 +111,13 @@ public class Listeners implements Listener {
     }
 
     public static void handleDisqualified(Player player) {
+        HideNSeek current = getCurrentEvent();
+        if (current == null) { return; }
+
         if (!player.isOnline()) {
             waitingLogin.add(player.getUniqueId());
             return;
         }
-
-        HideNSeek current = getCurrentEvent();
-        if (current == null) { return; }
 
         pendingDisqualification.remove(player.getUniqueId());
 
@@ -129,14 +129,20 @@ public class Listeners implements Listener {
         playerList.remove(player);
         current.setPlayers(playerList);
 
-        player.setHealth(0.0);
+        if (!player.isDead()) {
+            player.setHealth(0.0);
+        }
 
         utils.broadcastPlayers(current, player.getName() + " was disqualified!");
         utils.broadcastHunters(current, player.getName() + " was disqualified!");
 
+        Location location = player.getLocation();
+        location.getWorld().strikeLightningEffect(location);
+
+        player.sendMessage(Component.text("You have been disqualified from the Hide & Seek event. If you believe this is a mistake, contact event organizers.").color(NamedTextColor.RED));
+
         try {
             TownyAPI.getInstance().requestTeleport(player, current.getHostTown().getSpawn(), 0);
-            player.sendMessage(Component.text("You have been disqualified from the Hide & Seek event. If you believe this is a mistake, contact event organizers.").color(NamedTextColor.RED));
         } catch (TownyException e) {
             utils.broadcastHunters(current, "Warning! Could not teleport " + player.getName() + " to Town spawn!");
         }
@@ -148,7 +154,7 @@ public class Listeners implements Listener {
         if (current == null) { return; }
 
         Player player = event.getPlayer();
-        if (!current.getPlayers().contains(player)) { return; }
+        if (!utils.isPlayer(player)) { return; }
 
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
@@ -173,15 +179,9 @@ public class Listeners implements Listener {
         Player player = event.getEntity();
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
-        if (!current.getPlayers().contains(player)) return;
+        if (!utils.isPlayer(player)) return;
 
-        Town deathTown = TownyAPI.getInstance().getTown(player.getLocation());
-        if (deathTown == null || !deathTown.equals(current.getHostTown())) return;
-
-        Location deathLocation = player.getLocation();
-        deathLocation.getWorld().strikeLightningEffect(deathLocation);
-
-
+        handleDisqualified(player);
         refundGold(event);
     }
 
@@ -223,7 +223,7 @@ public class Listeners implements Listener {
     public void onTeleport(SpawnEvent event) {
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
-        if (!current.getPlayers().contains(event.getPlayer())) return;
+        if (!utils.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getFrom());
         if (town == null) return;
         if (!current.getHostTown().equals(town)) return;
@@ -255,7 +255,7 @@ public class Listeners implements Listener {
     public void onECOpen(PlayerInteractEvent event) {
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
-        if (!current.getPlayers().contains(event.getPlayer())) return;
+        if (!utils.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getInteractionPoint());
         if (town == null) return;
         if (!current.getHostTown().equals(town)) return;

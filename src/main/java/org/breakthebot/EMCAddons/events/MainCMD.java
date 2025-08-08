@@ -53,7 +53,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 0) {
-            player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter>").color(NamedTextColor.RED));
+            player.sendMessage(Component.text("Usage: /eventmanager <start|end|player|hunter|broadcast|giveall|status>").color(NamedTextColor.RED));
             return false;
         }
 
@@ -95,7 +95,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         .map(TownyObject::getName)
                         .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
-                case "player" -> Stream.of("add", "remove", "list", "disqualify")
+                case "player" -> Stream.of("add", "remove", "list", "disqualify", "appeal")
                         .filter(s -> s.startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
                 case "hunter" -> Stream.of("add", "remove", "list")
@@ -109,7 +109,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 3 && (args[0].equalsIgnoreCase("player") || args[0].equalsIgnoreCase("hunter"))) {
-            if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("disqualify")) {
+            if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("disqualify") || args[1].equalsIgnoreCase("appeal")) {
                 return Bukkit.getOnlinePlayers().stream()
                         .map(Player::getName)
                         .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
@@ -144,6 +144,8 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         HideNSeek event = new HideNSeek(town);
         EventManager.getInstance().setCurrent(event);
         player.sendMessage(Component.text("Event started for town: " + town.getName()).color(NamedTextColor.GREEN));
+
+        utils.broadcastGlobal("Hide & Seek event started for town: " + town.getName());
     }
 
     private void endEvent(Player player) {
@@ -166,7 +168,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length < 2) {
-            player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify> [player]").color(NamedTextColor.RED));
+            player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify|appeal> [player]").color(NamedTextColor.RED));
             return;
         }
 
@@ -196,7 +198,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 player.sendMessage(msg);
             }
 
-            case "add", "remove", "disqualify" -> {
+            case "add", "remove", "disqualify", "appeal" -> {
                 if (args.length < 3) {
                     player.sendMessage(Component.text("You must specify a player name for this action.").color(NamedTextColor.RED));
                     return;
@@ -222,8 +224,17 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
                             return;
                         }
+                        if (utils.isDisqualified(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is a disqualified player.").color(NamedTextColor.RED));
+                            return;
+                        }
+                        if (utils.hasItems(target)) {
+                            player.sendMessage(Component.text(target.getName() + " must have an empty inventory to be added to the player list.").color(NamedTextColor.RED));
+                            return;
+                        }
                         list.add(target);
                         player.sendMessage(Component.text(target.getName() + " added to the player list").color(NamedTextColor.GREEN));
+                        target.sendMessage(Component.text("You have been registered as a player for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
                     case "remove" -> {
                         if (!list.contains(target)) {
@@ -232,6 +243,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         }
                         list.remove(target);
                         player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
+                        target.sendMessage(Component.text("You have been removed as a player for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
                     case "disqualify" -> {
                         if (!list.contains(target)) {
@@ -240,10 +252,21 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         }
                         Listeners.handleDisqualified(target);
                     }
+                    case "appeal" -> {
+                        if (!utils.isDisqualified(target)) {
+                            player.sendMessage(Component.text(target.getName() + " is not disqualified.").color(NamedTextColor.RED));
+                            return;
+                        }
+                        List<Player> disqualifed = event.getDisqualified();
+                        disqualifed.remove(target);
+                        event.setDisqualified(disqualifed);
+                        player.sendMessage(Component.text(target.getName() + " is no longer disqualified.").color(NamedTextColor.GREEN));
+                        target.sendMessage(Component.text("You are no longer disqualified from the Hide & Seek Event!").color(NamedTextColor.GREEN));
+                    }
                 }
             }
             default -> {
-                player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify> [player]").color(NamedTextColor.RED));
+                player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify|appeal> [player]").color(NamedTextColor.RED));
             }
         }
         event.setPlayers(list);
@@ -315,6 +338,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         }
                         list.add(target);
                         player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
+                        target.sendMessage(Component.text("You have been added as a hunter for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
                     case "remove" -> {
                         if (!list.contains(target)) {
@@ -323,6 +347,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                         }
                         list.remove(target);
                         player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
+                        target.sendMessage(Component.text("You have been removed as a hunter for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
                 }
             }
@@ -375,6 +400,11 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             target.sendMessage(Component.text("You received loot from the event organisers!").color(NamedTextColor.GREEN));
         }
         player.sendMessage(Component.text("Gave item to " + targets.size() + " players.").color(NamedTextColor.GREEN));
+
+        Component log = Component.text(player.getName() + " gave " + itemInHand.getType()
+                        + " to " + targets.size() + " " + action.toLowerCase() + "s")
+                .color(NamedTextColor.BLUE);
+        utils.broadcastAdmins(log);
     }
 
     private void status(Player player) {
