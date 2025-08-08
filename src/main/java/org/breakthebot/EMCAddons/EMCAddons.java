@@ -24,6 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class EMCAddons extends JavaPlugin {
     private static EMCAddons instance;
@@ -67,18 +69,6 @@ public final class EMCAddons extends JavaPlugin {
         } catch (ClassNotFoundException e) {
             getLogger().info("Running on standard Bukkit/Paper environment.");
             isFolia = false;
-        }
-    }
-
-    public void runTaskDelayed(Player player, Runnable task, long duration) {
-        if (isFolia) {
-            player.getScheduler().runDelayed(this,
-                    scheduledTask -> task.run(),
-                    task,
-                    duration
-            );
-        } else {
-            Bukkit.getScheduler().runTaskLater(this, task, duration);
         }
     }
 }

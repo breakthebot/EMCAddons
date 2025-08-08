@@ -250,7 +250,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
                             return;
                         }
-                        Listeners.handleDisqualified(target);
+                        Listeners.handleDisqualified(target.getUniqueId());
                     }
                     case "appeal" -> {
                         if (!utils.isDisqualified(target)) {

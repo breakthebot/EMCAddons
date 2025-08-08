@@ -18,7 +18,6 @@ package org.breakthebot.EMCAddons.hideNSeek;
  */
 
 import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.TownyMessaging;
 import com.palmergames.bukkit.towny.event.PlayerChangePlotEvent;
 import com.palmergames.bukkit.towny.event.SpawnEvent;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
@@ -26,10 +25,11 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.breakthebot.EMCAddons.EMCAddons;
 import org.breakthebot.EMCAddons.events.EventManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -55,15 +55,13 @@ public class Listeners implements Listener {
         return EventManager.getInstance().getCurrent();
     }
 
-    private static final Set<UUID> pendingDisqualification = new HashSet<>();
+    private static final Map<UUID, Long> pendingDisqualification = new HashMap<>();
     private static final Map<UUID, Long> recentRejoins = new HashMap<>();
-    private static final Set<UUID> waitingLogin = new HashSet<>();
     private static final Map<UUID, List<ItemStack>> respawnGold = new HashMap<>();
 
     public static void clearArrays() {
         pendingDisqualification.clear();
         recentRejoins.clear();
-        waitingLogin.clear();
         respawnGold.clear();
     }
 
@@ -90,7 +88,7 @@ public class Listeners implements Listener {
         if (town1 == null || !town1.equals(town2)) return;
         if (town1.equals(current.getHostTown())) {
             event.setCancelled(true);
-            TownyMessaging.sendErrorMsg(attacker, "You may not attack this player as you are not a hunter in this Event.");
+            attacker.sendMessage(Component.text("You may not attack this player as you are not a hunter in this Event.").color(NamedTextColor.RED));
         }
     }
 
@@ -101,21 +99,15 @@ public class Listeners implements Listener {
         if (current == null) return;
         if (!utils.isPlayer(player)) return;
         UUID uuid = player.getUniqueId();
-        pendingDisqualification.add(uuid);
-
-        EMCAddons.getInstance().runTaskDelayed(player, () -> {
-            if (pendingDisqualification.contains(uuid)) {
-                handleDisqualified(player);
-            }
-        }, 20L * 60);
+        pendingDisqualification.put(uuid, System.currentTimeMillis());
     }
 
-    public static void handleDisqualified(Player player) {
+    public static void handleDisqualified(UUID uuid) {
         HideNSeek current = getCurrentEvent();
         if (current == null) { return; }
 
-        if (!player.isOnline()) {
-            waitingLogin.add(player.getUniqueId());
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null || !player.isOnline()) {
             return;
         }
 
@@ -167,10 +159,13 @@ public class Listeners implements Listener {
         }
         recentRejoins.put(uuid, now);
 
-        if (waitingLogin.remove(player.getUniqueId())) {
-            handleDisqualified(player);
-        } else {
-            pendingDisqualification.remove(uuid);
+        Long logoff = pendingDisqualification.get(uuid);
+        if (logoff != null) {
+            if (logoff < now - 60_000L) {
+                handleDisqualified(uuid);
+            } else {
+                pendingDisqualification.remove(uuid);
+            }
         }
     }
 
@@ -180,8 +175,10 @@ public class Listeners implements Listener {
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
         if (!utils.isPlayer(player)) return;
+        if (!utils.isDisqualified(player))  {
+            handleDisqualified(player.getUniqueId());
+        }
 
-        handleDisqualified(player);
         refundGold(event);
     }
 
@@ -247,7 +244,7 @@ public class Listeners implements Listener {
         if (targetBlock != null) { targetTown = targetBlock.getTownOrNull(); }
         if (town.equals(targetTown)) return;
         if (current.getHostTown().equals(town)) {
-            handleDisqualified(event.getPlayer());
+            handleDisqualified(event.getPlayer().getUniqueId());
         }
     }
 
@@ -256,13 +253,15 @@ public class Listeners implements Listener {
         HideNSeek current = getCurrentEvent();
         if (current == null) return;
         if (!utils.isPlayer(event.getPlayer())) return;
-        Town town = TownyAPI.getInstance().getTown(event.getInteractionPoint());
-        if (town == null) return;
-        if (!current.getHostTown().equals(town)) return;
 
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getClickedBlock() == null || event.getClickedBlock().getType() != Material.ENDER_CHEST) return;
         if (event.getHand() != EquipmentSlot.HAND) return;
+
+        Block clicked = event.getClickedBlock();
+        if (clicked == null || clicked.getType() != Material.ENDER_CHEST) return;
+
+        Location loc = event.getInteractionPoint();
+        if (loc == null) return;
 
         event.setCancelled(true);
         event.getPlayer().sendMessage("You are not allowed to open Ender Chests during the Hide & Seek event!");
