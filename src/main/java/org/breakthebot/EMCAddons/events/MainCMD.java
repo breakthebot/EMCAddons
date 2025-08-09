@@ -137,7 +137,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
 
         HideNSeek current = EventManager.getInstance().getCurrent();
         if (current != null) {
-            player.sendMessage(Component.text("There's already an active event for " + current.getHostTown().getName()).color(NamedTextColor.RED));
+            player.sendMessage(Component.text("There's already an active event at " + current.getHostTown().getName()).color(NamedTextColor.RED));
             return;
         }
 
@@ -145,7 +145,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         EventManager.getInstance().setCurrent(event);
         player.sendMessage(Component.text("Event started for town: " + town.getName()).color(NamedTextColor.GREEN));
 
-        utils.broadcastGlobal("Hide & Seek event started for town: " + town.getName());
+        utils.broadcastGlobal("Hide & Seek event started!");
     }
 
     private void endEvent(Player player) {
@@ -233,6 +233,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             return;
                         }
                         list.add(target);
+                        event.setPlayers(list);
                         player.sendMessage(Component.text(target.getName() + " added to the player list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been registered as a player for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
@@ -242,6 +243,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             return;
                         }
                         list.remove(target);
+                        event.setPlayers(list);
                         player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been removed as a player for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
@@ -265,11 +267,8 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                     }
                 }
             }
-            default -> {
-                player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify|appeal> [player]").color(NamedTextColor.RED));
-            }
+            default -> player.sendMessage(Component.text("Usage: /eventmanager player <add|remove|list|disqualify|appeal> [player]").color(NamedTextColor.RED));
         }
-        event.setPlayers(list);
     }
 
     private void manageHunters(Player player, String[] args) {
@@ -337,6 +336,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             return;
                         }
                         list.add(target);
+                        event.setHunters(list);
                         player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been added as a hunter for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
@@ -346,18 +346,15 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                             return;
                         }
                         list.remove(target);
+                        event.setHunters(list);
                         player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been removed as a hunter for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
                 }
             }
-            default -> {
-                player.sendMessage(Component.text("Usage: /eventmanager hunter <add|remove|list> [hunter]").color(NamedTextColor.RED));
-            }
+            default -> player.sendMessage(Component.text("Usage: /eventmanager hunter <add|remove|list> [hunter]").color(NamedTextColor.RED));
         }
-        event.setHunters(list);
     }
-
 
     private void broadcastEvent(Player player, String[] args) {
         if (!player.hasPermission("eventmanager.broadcast")) {
@@ -374,7 +371,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             return;
         }
         if (args.length != 2) {
-            player.sendMessage(Component.text("Usage: /eventmanager giveall player|hunter").color(NamedTextColor.RED));
+            player.sendMessage(Component.text("Usage: /eventmanager giveall <player|hunter>").color(NamedTextColor.RED));
             return;
         }
         String action = args[1];
@@ -418,6 +415,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             return;
         }
         Component status = Component.text("Event Stats:\n")
+                .color(NamedTextColor.BLUE)
                 .append(Component.text(current.getPlayers().size() + " players.\n").color(NamedTextColor.GREEN))
                 .append(Component.text(current.getHunters().size() + " hunters.\n").color(NamedTextColor.GOLD))
                 .append(Component.text(current.getDisqualified().size() + " disqualified.").color(NamedTextColor.RED));
