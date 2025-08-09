@@ -19,3 +19,4 @@ permissions:
       eventmanager.manage.hunters: true
       eventmanager.broadcast: true
       eventmanager.giveall: true
+      eventmanager.status: true
