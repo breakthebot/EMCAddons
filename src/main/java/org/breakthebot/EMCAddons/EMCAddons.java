@@ -20,16 +20,12 @@ package org.breakthebot.EMCAddons;
 import org.breakthebot.EMCAddons.events.MainCMD;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class EMCAddons extends JavaPlugin {
     private static EMCAddons instance;
-    public static boolean isFolia;
 
     public static EMCAddons getInstance() {
         return instance;
@@ -45,7 +41,6 @@ public final class EMCAddons extends JavaPlugin {
         getCommand("eventmanager").setExecutor(new MainCMD());
         getCommand("eventmanager").setTabCompleter(new MainCMD());
 
-        detectFolia();
     }
 
     public void eventRegister(Listener listener) {
@@ -59,16 +54,5 @@ public final class EMCAddons extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Plugin shutdown");
-    }
-
-    private void detectFolia() {
-        try {
-            Class.forName("io.papermc.paper.threadedregions.scheduler.EntityScheduler");
-            getLogger().info("Folia environment detected.");
-            isFolia = true;
-        } catch (ClassNotFoundException e) {
-            getLogger().info("Running on standard Bukkit/Paper environment.");
-            isFolia = false;
-        }
     }
 }
