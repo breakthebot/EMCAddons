@@ -28,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class utils {
 
@@ -120,7 +119,7 @@ public class utils {
             if (!player.hasPermission("eventmanager.admin")) continue;
             player.sendMessage(msg);
         }
-
     }
+
 
 }
