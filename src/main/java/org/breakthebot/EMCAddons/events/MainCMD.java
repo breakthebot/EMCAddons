@@ -37,6 +37,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,24 +73,23 @@ public class MainCMD implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        if (
-                !sender.hasPermission("eventmanager.event.start") &&
-                        !sender.hasPermission("eventmanager.event.end") &&
-                        !sender.hasPermission("eventmanager.manage.players") &&
-                        !sender.hasPermission("eventmanager.manage.hunters") &&
-                        !sender.hasPermission("eventmanager.broadcast") &&
-                        !sender.hasPermission("eventmanager.giveall")
-        ) {
-            return List.of();
-        }
+        List<String> perms = new ArrayList<>();
+        if (sender.hasPermission("eventmanager.event.start")) perms.add("start");
+        if (sender.hasPermission("eventmanager.event.end")) perms.add("end");
+        if (sender.hasPermission("eventmanager.manage.players")) perms.add("player");
+        if (sender.hasPermission("eventmanager.manage.hunters")) perms.add("hunter");
+        if (sender.hasPermission("eventmanager.broadcast")) perms.add("broadcast");
+        if (sender.hasPermission("eventmanager.giveall")) perms.add("giveall");
+        if (sender.hasPermission("eventmanager.status")) perms.add("status");
+        if (perms.isEmpty()) return List.of();
 
         if (args.length == 1) {
-            return Stream.of("start", "end", "player", "hunter", "broadcast", "giveall", "status")
+            return perms.stream()
                     .filter(s -> s.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
 
-        if (args.length == 2) {
+        if (args.length == 2 && perms.contains(args[0].toLowerCase())) {
             return switch (args[0].toLowerCase()) {
                 case "start" -> TownyUniverse.getInstance().getTowns().stream()
                         .map(TownyObject::getName)
@@ -108,12 +108,22 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             };
         }
 
-        if (args.length == 3 && (args[0].equalsIgnoreCase("player") || args[0].equalsIgnoreCase("hunter"))) {
-            if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("disqualify") || args[1].equalsIgnoreCase("appeal")) {
-                return Bukkit.getOnlinePlayers().stream()
-                        .map(Player::getName)
-                        .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
-                        .collect(Collectors.toList());
+        if (args.length == 3 && perms.contains(args[0].toLowerCase())) {
+            if (args[0].equalsIgnoreCase("player") || args[0].equalsIgnoreCase("hunter")) {
+                if (args[1].equalsIgnoreCase("appeal")) {
+                    if (utils.getCurrentEvent() == null) return List.of();
+                    return utils.getCurrentEvent().getDisqualified().stream()
+                            .map(Player::getName)
+                            .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
+                if (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")
+                        || args[1].equalsIgnoreCase("disqualify")) {
+                    return Bukkit.getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
+                            .collect(Collectors.toList());
+                }
             }
         }
 
