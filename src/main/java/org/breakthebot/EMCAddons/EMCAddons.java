@@ -18,8 +18,13 @@ package org.breakthebot.EMCAddons;
  */
 
 import org.breakthebot.EMCAddons.events.MainCMD;
+import org.breakthebot.EMCAddons.events.hideNSeek.HideCMDAlias;
+import org.breakthebot.EMCAddons.events.tag.TagCMDAlias;
+import org.breakthebot.EMCAddons.vanish.VanishListeners;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
-import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,15 +41,30 @@ public final class EMCAddons extends JavaPlugin {
         instance = this;
         getLogger().info("Plugin started!");
         VanishManager.init(this);
-        getServer().getPluginManager().registerEvents(new VanishManager(), this);
+        eventRegister(new VanishListeners());
 
-        getCommand("eventmanager").setExecutor(new MainCMD());
-        getCommand("eventmanager").setTabCompleter(new MainCMD());
+        MainCMD mainCMD = new MainCMD();
+        commandRegister("eventmanager", mainCMD, mainCMD);
 
+        HideCMDAlias hideCMDAlias = new HideCMDAlias();
+        commandRegister("hide", hideCMDAlias, hideCMDAlias);
+
+        TagCMDAlias tagCMDAlias = new TagCMDAlias();
+        commandRegister("tag", tagCMDAlias, tagCMDAlias);
+    }
+
+    private void commandRegister(String name, CommandExecutor executor, TabCompleter tabCompleter) {
+        PluginCommand cmd = getCommand(name);
+        if (cmd == null) {
+            getLogger().warning("Could not find command: " + name);
+            return;
+        }
+        cmd.setExecutor(executor);
+        cmd.setTabCompleter(tabCompleter);
     }
 
     public void eventRegister(Listener listener) {
-        Bukkit.getPluginManager().registerEvents(listener, instance);
+        getServer().getPluginManager().registerEvents(listener, instance);
     }
 
     public void eventUnregister(Listener listener) {

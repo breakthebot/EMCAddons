@@ -6,17 +6,42 @@ authors: [ Veyronity ]
 folia-supported: true
 commands:
   eventmanager:
-    aliases: ["em", "event"]
-    description: Manage server hosted events
+    aliases: ["em", "event", "game"]
+    description: Manage all server hosted events
+  hide:
+    aliases: ["hidenseek"]
+    description: Manage Hide & Seek Event
+  tag:
+    description: Manage Tag Event
+
 permissions:
   eventmanager.admin:
     default: op
     description: Grant all eventmanager permissions
     children:
-      eventmanager.event.start: true
-      eventmanager.event.end: true
-      eventmanager.manage.players: true
-      eventmanager.manage.hunters: true
       eventmanager.broadcast: true
-      eventmanager.giveall: true
-      eventmanager.status: true
+      eventmanager.list: true
+      eventmanager.hide-n-seek: true
+      eventmanager.tag: true
+
+  eventmanager.hide-n-seek:
+    default: op
+    description: Grant all Hide & Seek Event Management permissions
+    children:
+      eventmanager.hide-n-seek.event.create: true
+      eventmanager.hide-n-seek.event.start: true
+      eventmanager.hide-n-seek.event.end: true
+      eventmanager.hide-n-seek.manage.players: true
+      eventmanager.hide-n-seek.manage.hunters: true
+      eventmanager.hide-n-seek.giveall: true
+      eventmanager.hide-n-seek.status: true
+
+  eventmanager.tag:
+    default: op
+    description: Grant all Tag Event Management permissions
+    children:
+      eventmanager.tag.event.create: true
+      eventmanager.tag.event.start: true
+      eventmanager.tag.event.end: true
+      eventmanager.tag.manage.players: true
+      eventmanager.tag.set.tagged: true

@@ -1,4 +1,4 @@
-package org.breakthebot.EMCAddons.hideNSeek;
+package org.breakthebot.EMCAddons.events.hideNSeek;
 
 /*
  * This file is part of EMCAddons.
@@ -25,36 +25,28 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.breakthebot.EMCAddons.events.EventManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 
-public class Listeners implements Listener {
-
-    private static @Nullable HideNSeek getCurrentEvent() {
-        return EventManager.getInstance().getCurrent();
-    }
-
+public class HideListeners implements Listener {
+    
     private static final Map<UUID, Long> pendingDisqualification = new HashMap<>();
     private static final Map<UUID, Long> recentRejoins = new HashMap<>();
     private static final Map<UUID, List<ItemStack>> respawnGold = new HashMap<>();
@@ -78,9 +70,9 @@ public class Listeners implements Listener {
             attacker = shooter;
         } else { return; }
 
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (utils.isHunter(attacker)) return;
+        if (HideUtils.isHunter(attacker)) return;
 
         TownyAPI API = TownyAPI.getInstance();
         Town town1 = API.getTown(victim.getLocation());
@@ -94,16 +86,16 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onLogOff(PlayerQuitEvent event) {
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         Player player = event.getPlayer();
         if (current == null) return;
-        if (!utils.isPlayer(player)) return;
+        if (!HideUtils.isPlayer(player)) return;
         UUID uuid = player.getUniqueId();
         pendingDisqualification.put(uuid, System.currentTimeMillis());
     }
 
     public static void handleDisqualified(UUID uuid) {
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) { return; }
 
         Player player = Bukkit.getPlayer(uuid);
@@ -125,8 +117,8 @@ public class Listeners implements Listener {
             player.setHealth(0.0);
         }
 
-        utils.broadcastPlayers(current, player.getName() + " was disqualified!");
-        utils.broadcastHunters(current, player.getName() + " was disqualified!");
+        HideUtils.broadcastPlayers(current, player.getName() + " was disqualified!");
+        HideUtils.broadcastHunters(current, player.getName() + " was disqualified!");
 
         Location location = player.getLocation();
         location.getWorld().strikeLightningEffect(location);
@@ -136,17 +128,17 @@ public class Listeners implements Listener {
         try {
             TownyAPI.getInstance().requestTeleport(player, current.getHostTown().getSpawn(), 0);
         } catch (TownyException e) {
-            utils.broadcastHunters(current, "Warning! Could not teleport " + player.getName() + " to Town spawn!");
+            HideUtils.broadcastHunters(current, "Warning! Could not teleport " + player.getName() + " to Town spawn!");
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) { return; }
 
         Player player = event.getPlayer();
-        if (!utils.isPlayer(player)) { return; }
+        if (!HideUtils.isPlayer(player)) { return; }
 
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
@@ -154,7 +146,7 @@ public class Listeners implements Listener {
         if (recentRejoins.containsKey(uuid)) {
             long lastJoin = recentRejoins.get(uuid);
             if (now - lastJoin <= 5 * 60 * 1000) {
-                utils.broadcastHunters(current, player.getName() + " has logged on twice in the past 5 minutes. \nUse /em player disqualify if caught cheating.");
+                HideUtils.broadcastHunters(current, player.getName() + " has logged on twice in the past 5 minutes. \nUse /em player disqualify if caught cheating.");
             }
         }
         recentRejoins.put(uuid, now);
@@ -172,10 +164,10 @@ public class Listeners implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!utils.isPlayer(player)) return;
-        if (!utils.isDisqualified(player))  {
+        if (!HideUtils.isPlayer(player)) return;
+        if (!HideUtils.isDisqualified(player))  {
             handleDisqualified(player.getUniqueId());
         }
 
@@ -218,9 +210,9 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onTeleport(SpawnEvent event) {
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!utils.isPlayer(event.getPlayer())) return;
+        if (!HideUtils.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getFrom());
         if (town == null) return;
         if (!current.getHostTown().equals(town)) return;
@@ -231,9 +223,9 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onPlotChange(PlayerChangePlotEvent event) {
-        HideNSeek current = getCurrentEvent();
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!utils.isPlayer(event.getPlayer())) return;
+        if (!HideUtils.isPlayer(event.getPlayer())) return;
         TownBlock origin = event.getFrom().getTownBlockOrNull();
         if (origin == null) return;
         Town town = origin.getTownOrNull();
@@ -249,21 +241,16 @@ public class Listeners implements Listener {
     }
 
     @EventHandler
-    public void onECOpen(PlayerInteractEvent event) {
-        HideNSeek current = getCurrentEvent();
+    public void onECOpen(InventoryOpenEvent event) {
+        HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!utils.isPlayer(event.getPlayer())) return;
 
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getHand() != EquipmentSlot.HAND) return;
+        if (!(event.getPlayer() instanceof Player player)) return;
+        if (!HideUtils.isPlayer(player)) return;
 
-        Block clicked = event.getClickedBlock();
-        if (clicked == null || clicked.getType() != Material.ENDER_CHEST) return;
-
-        Location loc = event.getInteractionPoint();
-        if (loc == null) return;
-
-        event.setCancelled(true);
-        event.getPlayer().sendMessage("You are not allowed to open Ender Chests during the Hide & Seek event!");
+        if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
+            event.setCancelled(true);
+            player.sendMessage("You are not allowed to open Ender Chests during the Hide & Seek event!");
+        }
     }
 }
