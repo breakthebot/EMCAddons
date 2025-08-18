@@ -22,7 +22,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.breakthebot.EMCAddons.EMCAddons;
 import org.breakthebot.EMCAddons.events.BaseEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.Nullable;
@@ -63,16 +62,6 @@ public class Tag extends BaseEvent {
     public void removeDisqualified(Player player) { this.disqualified.remove(player.getUniqueId()); }
     public boolean isDisqualified(UUID uuid) { return this.disqualified.contains(uuid); }
     public boolean isDisqualified(Player player) { return this.disqualified.contains(player.getUniqueId()); }
-
-
-    private static List<Player> getPlayersFromUUID(List<UUID> uuids) {
-        List<Player> players = new ArrayList<>();
-        for (UUID uuid : uuids) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) players.add(player);
-        }
-        return players;
-    }
 
 
     @Override

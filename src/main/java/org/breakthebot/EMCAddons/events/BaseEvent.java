@@ -40,17 +40,11 @@ public abstract class BaseEvent {
     public void addPlayer(Player player) { if (!isPlayer(player)) this.players.add(player.getUniqueId()); }
     public void removePlayer(UUID uuid) { this.players.remove(uuid); }
     public void removePlayer(Player player) { this.players.remove(player.getUniqueId()); }
-    public boolean isPlayer(UUID uuid) { return this.getPlayerUUIDS().contains(uuid); }
+    public boolean isPlayer(UUID uuid) { return this.players.contains(uuid); }
     public boolean isPlayer(Player player) { return this.getPlayers().contains(player); }
 
-    public List<UUID> getPlayerUUIDS() { return this.players; }
     public List<Player> getPlayers() {
-        List<Player> objects = new ArrayList<>();
-        for (UUID uuid : this.players) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) objects.add(player);
-        }
-        return objects;
+        return getPlayersFromUUID(this.players);
     }
 
     public boolean getStarted() { return this.hasStarted; }
@@ -75,6 +69,15 @@ public abstract class BaseEvent {
     protected abstract void onStart();
     protected abstract void onEnd();
 
+
+    public List<Player> getPlayersFromUUID(List<UUID> uuids) {
+        List<Player> players = new ArrayList<>();
+        for (UUID uuid : uuids) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) players.add(player);
+        }
+        return players;
+    }
 
     public void broadcastPlayers(String msg) {
         Component broadcastMessage = Component.text("[Player Broadcast] ")

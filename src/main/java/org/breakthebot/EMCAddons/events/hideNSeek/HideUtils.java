@@ -36,37 +36,7 @@ public class HideUtils {
     public static @Nullable HideNSeek getCurrentEvent() {
         return HideNSeek.getInstance();
     }
-
-    public static boolean isPlayer(Player player) {
-        HideNSeek event = getCurrentEvent();
-        if (event == null) return false;
-        return event.getPlayers().contains(player);
-    }
-
-    public static boolean isHunter(Player player) {
-        HideNSeek event = getCurrentEvent();
-        if (event == null) return false;
-        return event.getHunters().contains(player);
-    }
-
-    public static boolean isDisqualified(Player player) {
-        HideNSeek event = getCurrentEvent();
-        if (event == null) return false;
-        return event.getDisqualified().contains(player);
-    }
-
-    public static List<Player> getPlayers() {
-        HideNSeek event = getCurrentEvent();
-        if (event == null) return List.of();
-        return event.getPlayers();
-    }
-
-    public static List<Player> getHunters() {
-        HideNSeek event = getCurrentEvent();
-        if (event == null) return List.of();
-        return event.getHunters();
-    }
-
+    
     public static boolean hasItems(Player player) {
         PlayerInventory inv = player.getInventory();
 

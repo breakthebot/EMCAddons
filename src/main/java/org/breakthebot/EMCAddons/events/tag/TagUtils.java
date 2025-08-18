@@ -46,18 +46,6 @@ public class TagUtils {
         }, duration, TimeUnit.SECONDS);
     }
 
-    public static boolean isPlayer(Player player) {
-        Tag current = Tag.getInstance();
-        if (current == null) return false;
-        return current.getPlayers().contains(player);
-    }
-
-    public static boolean isDisqualified(Player player) {
-        Tag current = Tag.getInstance();
-        if (current == null) return false;
-        return current.getDisqualified().contains(player);
-    }
-
     public static void setGlow(Player player) {
         player.setGlowing(true);
     }

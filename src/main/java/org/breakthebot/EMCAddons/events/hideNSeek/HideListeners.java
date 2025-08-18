@@ -25,6 +25,7 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.breakthebot.EMCAddons.events.MainUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -72,7 +73,7 @@ public class HideListeners implements Listener {
 
         HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (HideUtils.isHunter(attacker)) return;
+        if (current.isHunter(attacker)) return;
 
         TownyAPI API = TownyAPI.getInstance();
         Town town1 = API.getTown(victim.getLocation());
@@ -89,7 +90,7 @@ public class HideListeners implements Listener {
         HideNSeek current = HideUtils.getCurrentEvent();
         Player player = event.getPlayer();
         if (current == null) return;
-        if (!HideUtils.isPlayer(player)) return;
+        if (!current.isPlayer(player)) return;
         UUID uuid = player.getUniqueId();
         pendingDisqualification.put(uuid, System.currentTimeMillis());
     }
@@ -105,13 +106,8 @@ public class HideListeners implements Listener {
 
         pendingDisqualification.remove(player.getUniqueId());
 
-        List<Player> disqualifiedList = current.getDisqualified();
-        disqualifiedList.add(player);
-        current.setDisqualified(disqualifiedList);
-
-        List<Player> playerList = current.getPlayers();
-        playerList.remove(player);
-        current.setPlayers(playerList);
+        current.removePlayer(player);
+        current.addDisqualified(player);
 
         if (!player.isDead()) {
             player.setHealth(0.0);
@@ -128,7 +124,7 @@ public class HideListeners implements Listener {
         try {
             TownyAPI.getInstance().requestTeleport(player, current.getHostTown().getSpawn(), 0);
         } catch (TownyException e) {
-            HideUtils.broadcastHunters(current, "Warning! Could not teleport " + player.getName() + " to Town spawn!");
+            MainUtils.broadcastAdmins("Warning! Could not teleport " + player.getName() + " to Town spawn!");
         }
     }
 
@@ -138,7 +134,7 @@ public class HideListeners implements Listener {
         if (current == null) { return; }
 
         Player player = event.getPlayer();
-        if (!HideUtils.isPlayer(player)) { return; }
+        if (!current.isPlayer(player)) { return; }
 
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
@@ -166,8 +162,8 @@ public class HideListeners implements Listener {
         Player player = event.getEntity();
         HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!HideUtils.isPlayer(player)) return;
-        if (!HideUtils.isDisqualified(player))  {
+        if (!current.isPlayer(player)) return;
+        if (!current.isDisqualified(player))  {
             handleDisqualified(player.getUniqueId());
         }
 
@@ -212,7 +208,7 @@ public class HideListeners implements Listener {
     public void onTeleport(SpawnEvent event) {
         HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!HideUtils.isPlayer(event.getPlayer())) return;
+        if (!current.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getFrom());
         if (town == null) return;
         if (!current.getHostTown().equals(town)) return;
@@ -225,7 +221,7 @@ public class HideListeners implements Listener {
     public void onPlotChange(PlayerChangePlotEvent event) {
         HideNSeek current = HideUtils.getCurrentEvent();
         if (current == null) return;
-        if (!HideUtils.isPlayer(event.getPlayer())) return;
+        if (!current.isPlayer(event.getPlayer())) return;
         TownBlock origin = event.getFrom().getTownBlockOrNull();
         if (origin == null) return;
         Town town = origin.getTownOrNull();
@@ -246,7 +242,7 @@ public class HideListeners implements Listener {
         if (current == null) return;
 
         if (!(event.getPlayer() instanceof Player player)) return;
-        if (!HideUtils.isPlayer(player)) return;
+        if (!current.isPlayer(player)) return;
 
         if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
             event.setCancelled(true);

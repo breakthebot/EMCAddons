@@ -235,11 +235,11 @@ public class HideCMD {
                             player.sendMessage(Component.text(target.getName() + " is already in the player list").color(NamedTextColor.RED));
                             return;
                         }
-                        if (HideUtils.isHunter(target)) {
+                        if (event.isHunter(target)) {
                             player.sendMessage(Component.text(target.getName() + " is a hunter.").color(NamedTextColor.RED));
                             return;
                         }
-                        if (HideUtils.isDisqualified(target)) {
+                        if (event.isDisqualified(target)) {
                             player.sendMessage(Component.text(target.getName() + " is a disqualified player.").color(NamedTextColor.RED));
                             return;
                         }
@@ -247,8 +247,7 @@ public class HideCMD {
                             player.sendMessage(Component.text(target.getName() + " must have an empty inventory to be added to the player list.").color(NamedTextColor.RED));
                             return;
                         }
-                        list.add(target);
-                        event.setPlayers(list);
+                        event.addPlayer(target);
                         player.sendMessage(Component.text(target.getName() + " added to the player list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been registered as a player for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
@@ -257,8 +256,7 @@ public class HideCMD {
                             player.sendMessage(Component.text(target.getName() + " is not in the player list").color(NamedTextColor.RED));
                             return;
                         }
-                        list.remove(target);
-                        event.setPlayers(list);
+                        event.removePlayer(target);
                         player.sendMessage(Component.text(target.getName() + " removed from the player list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been removed as a player for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
@@ -270,13 +268,11 @@ public class HideCMD {
                         HideListeners.handleDisqualified(target.getUniqueId());
                     }
                     case "appeal" -> {
-                        if (!HideUtils.isDisqualified(target)) {
+                        if (!event.isDisqualified(target)) {
                             player.sendMessage(Component.text(target.getName() + " is not disqualified.").color(NamedTextColor.RED));
                             return;
                         }
-                        List<Player> disqualifed = event.getDisqualified();
-                        disqualifed.remove(target);
-                        event.setDisqualified(disqualifed);
+                        event.addDisqualified(target);
                         player.sendMessage(Component.text(target.getName() + " is no longer disqualified.").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You are no longer disqualified from the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
@@ -346,12 +342,11 @@ public class HideCMD {
                             player.sendMessage(Component.text(target.getName() + " is already in the hunters list").color(NamedTextColor.RED));
                             return;
                         }
-                        if (HideUtils.isPlayer(target)) {
+                        if (event.isPlayer(target)) {
                             player.sendMessage(Component.text(target.getName() + " is a player.").color(NamedTextColor.RED));
                             return;
                         }
-                        list.add(target);
-                        event.setHunters(list);
+                        event.addHunter(target);
                         player.sendMessage(Component.text(target.getName() + " added to the hunters list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been added as a hunter for the Hide & Seek Event!").color(NamedTextColor.GREEN));
                     }
@@ -360,8 +355,7 @@ public class HideCMD {
                             player.sendMessage(Component.text(target.getName() + " is not in the hunters list").color(NamedTextColor.RED));
                             return;
                         }
-                        list.remove(target);
-                        event.setHunters(list);
+                        event.removeHunter(target);
                         player.sendMessage(Component.text(target.getName() + " removed from the hunters list").color(NamedTextColor.GREEN));
                         target.sendMessage(Component.text("You have been removed as a hunter for the Hide & Seek Event!").color(NamedTextColor.RED));
                     }
@@ -380,12 +374,17 @@ public class HideCMD {
             player.sendMessage(Component.text("Usage: /em hide-n-seek giveall <player|hunter>").color(NamedTextColor.RED));
             return;
         }
+        HideNSeek event = HideNSeek.getInstance();
+        if (event == null) {
+            player.sendMessage(Component.text("No active event found. Start one with /em hide-n-seek start {town}").color(NamedTextColor.RED));
+            return;
+        }
         String action = args[1];
         List<Player> targets;
         if (action.equalsIgnoreCase("player")) {
-            targets = HideUtils.getPlayers();
+            targets = event.getPlayers();
         } else if (action.equalsIgnoreCase("hunter")) {
-            targets = HideUtils.getHunters();
+            targets = event.getHunters();
         } else {
             player.sendMessage(Component.text("Invalid target audience chosen. <player|hunter>").color(NamedTextColor.RED));
             return;

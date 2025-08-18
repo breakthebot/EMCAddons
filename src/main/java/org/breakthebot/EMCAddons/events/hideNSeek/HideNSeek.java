@@ -25,12 +25,12 @@ import org.bukkit.event.Listener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class HideNSeek extends BaseEvent {
     private final Town hostTown;
-    private List<Player> players;
-    private List<Player> hunters;
-    private List<Player> disqualified;
+    private final List<UUID> hunters;
+    private final List<UUID> disqualified;
     public Listener listenerInstance;
     private static HideNSeek instance;
 
@@ -61,13 +61,30 @@ public class HideNSeek extends BaseEvent {
         EMCAddons.getInstance().eventUnregister(this.getListenerInstance());
         HideListeners.clearArrays();
         instance = null;
+
+        players.clear();
+        hunters.clear();
+        disqualified.clear();
     }
 
-    public List<Player> getPlayers() { return this.players; }
-    public void setPlayers(List<Player> players) { this.players = players; }
-    public List<Player> getHunters() { return this.hunters; }
-    public void setHunters(List<Player> hunters) { this.hunters = hunters; }
-    public List<Player> getDisqualified() { return disqualified; }
-    public void setDisqualified(List<Player> disqualified) { this.disqualified = disqualified; }
+    public List<Player> getHunters(){
+        return getPlayersFromUUID(this.hunters);
+    }
+    public void addHunter(UUID uuid) { if (!isHunter(uuid)) this.hunters.add(uuid); }
+    public void addHunter(Player player) { if (!isHunter(player.getUniqueId())) this.hunters.add(player.getUniqueId()); }
+    public void removeHunter(UUID uuid) { this.hunters.remove(uuid); }
+    public void removeHunter(Player player) { this.hunters.remove(player.getUniqueId()); }
+    public boolean isHunter(UUID uuid) { return this.hunters.contains(uuid); }
+    public boolean isHunter(Player player) { return this.hunters.contains(player.getUniqueId()); }
+
+    public List<Player> getDisqualified() {
+        return getPlayersFromUUID(this.disqualified);
+    }
+    public void addDisqualified(UUID uuid) { if (!isDisqualified(uuid)) this.disqualified.add(uuid); }
+    public void addDisqualified(Player player) { if (!isDisqualified(player.getUniqueId())) this.disqualified.add(player.getUniqueId()); }
+    public void removeDisqualified(UUID uuid) { this.disqualified.remove(uuid); }
+    public void removeDisqualified(Player player) { this.disqualified.remove(player.getUniqueId()); }
+    public boolean isDisqualified(UUID uuid) { return this.disqualified.contains(uuid); }
+    public boolean isDisqualified(Player player) { return this.disqualified.contains(player.getUniqueId()); }
 
 }

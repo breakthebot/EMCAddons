@@ -113,11 +113,10 @@ public class TagListeners implements Listener {
 
         recentTags.put(attackerID, now);
 
-        current.addPlayer(attacker);
         current.addTagged(victim);
         current.removeTagged(attacker);
 
-        ScheduledTask task = disqualifyTasks.remove(victimID);
+        ScheduledTask task = disqualifyTasks.remove(attackerID);
         if (task != null) {
             task.cancel();
         }
@@ -187,7 +186,7 @@ public class TagListeners implements Listener {
         if (current == null) return;
 
         Player player = event.getEntity();
-        if (TagUtils.isPlayer(player) && !TagUtils.isDisqualified(player))  {
+        if (current.isPlayer(player) && !current.isDisqualified(player))  {
             disqualifyPlayer(player.getUniqueId());
         }
     }
@@ -196,7 +195,7 @@ public class TagListeners implements Listener {
     public void onTeleport(SpawnEvent event) {
         Tag current = Tag.getInstance();
         if (current == null) return;
-        if (!TagUtils.isPlayer(event.getPlayer())) return;
+        if (!current.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getFrom());
         if (town == null) return;
         if (current.getHostTown().equals(town)) {
@@ -210,7 +209,7 @@ public class TagListeners implements Listener {
         Tag current = Tag.getInstance();
         if (current == null) return;
         Player player = event.getPlayer();
-        if (!TagUtils.isPlayer(player) || current.isDisqualified(player)) return;
+        if (!current.isPlayer(player) || current.isDisqualified(player)) return;
         TownBlock origin = event.getFrom().getTownBlockOrNull();
         if (origin == null) return;
         Town town = origin.getTownOrNull();
@@ -232,7 +231,7 @@ public class TagListeners implements Listener {
         if (current == null) return;
 
         if (!(event.getPlayer() instanceof Player player)) return;
-        if (!TagUtils.isPlayer(player)) return;
+        if (!current.isPlayer(player)) return;
 
         if (event.getInventory().getType() == InventoryType.ENDER_CHEST) {
             event.setCancelled(true);
