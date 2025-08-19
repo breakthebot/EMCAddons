@@ -15,6 +15,15 @@ commands:
     description: Manage Tag Event
 
 permissions:
+  ly.skynet.specvanish:
+    default: op
+    description: Grant permission to hide from all non-immune online players while in spectator mode
+
+  ly.skynet.see.specvanish:
+    default: op
+    description: Grant permission to see all players regardless of their vanish status
+
+
   eventmanager.admin:
     default: op
     description: Grant all eventmanager permissions
@@ -44,4 +53,4 @@ permissions:
       eventmanager.tag.event.start: true
       eventmanager.tag.event.end: true
       eventmanager.tag.manage.players: true
-      eventmanager.tag.set.tagged: true
+      eventmanager.tag.status: true
