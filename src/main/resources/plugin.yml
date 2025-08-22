@@ -14,12 +14,29 @@ commands:
   tag:
     description: Manage Tag Event
 
+  superbreak:
+    aliases: ["sb"]
+    description: Toggle superbreak; allowing players to insta-break blocks
+    permission: emcaddons.superbreak
+
 permissions:
-  ly.skynet.specvanish:
+  emcaddons.specvanish:
+    default: op
+    description: Grant both sub permissions
+    children:
+      emcaddons.specvanish.use: true
+      emcaddons.specvanish.immune: true
+
+
+  emcaddons.superbreak:
+    default: op
+    description: Grant permission to use /superbreak
+
+  emcaddons.specvanish.use:
     default: op
     description: Grant permission to hide from all non-immune online players while in spectator mode
 
-  ly.skynet.see.specvanish:
+  emcaddons.specvanish.immune:
     default: op
     description: Grant permission to see all players regardless of their vanish status
 

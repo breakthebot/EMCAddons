@@ -33,11 +33,11 @@ public class VanishManager {
     }
 
     private static boolean checkImmune(Player player) {
-        return player.hasPermission("ly.skynet.see.specvanish");
+        return player.hasPermission("emcaddons.specvanish.immune");
     }
 
     private static boolean checkAllowed(Player player) {
-        return player.hasPermission("ly.skynet.specvanish");
+        return player.hasPermission("emcaddons.specvanish.use");
     }
 
     private static boolean checkVanished(Player player) {
@@ -46,7 +46,6 @@ public class VanishManager {
 
     public static void vanish(Player staff) {
         if (!checkAllowed(staff)) {
-            staff.sendMessage(Component.text("You do not have permission to go into vanish.").color(NamedTextColor.RED));
             return;
         }
         int total = 0;
