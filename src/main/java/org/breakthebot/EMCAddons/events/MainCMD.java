@@ -46,6 +46,11 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (!MainUtils.allowTabComplete(player)) {
+            player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return false;
+        }
+
         if (args.length == 0) {
             player.sendMessage(Component.text("Usage: /em {event} {action} {args}").color(NamedTextColor.RED));
             return false;
@@ -109,13 +114,14 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
             return;
         }
-        if (EventManager.getCurrentEventNames().isEmpty()) {
+        List<String> events = EventManager.getCurrentEventNames();
+        if (events.isEmpty()) {
             player.sendMessage(Component.text("No active events.").color(NamedTextColor.RED));
             return;
         }
         Component msg = Component.text("Active events: \n")
                 .color(NamedTextColor.BLUE)
-                .append(Component.text(String.join(", ", EventManager.getCurrentEventNames())).color(NamedTextColor.GREEN));
+                .append(Component.text(String.join(", ", events)).color(NamedTextColor.GREEN));
         player.sendMessage(msg);
     }
 }

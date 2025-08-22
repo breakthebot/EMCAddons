@@ -41,7 +41,7 @@ public final class EMCAddons extends JavaPlugin {
         instance = this;
         getLogger().info("Plugin started!");
         VanishManager.init(this);
-        eventRegister(new VanishListeners());
+        addListener(new VanishListeners());
 
         MainCMD mainCMD = new MainCMD();
         commandRegister("eventmanager", mainCMD, mainCMD);
@@ -63,13 +63,9 @@ public final class EMCAddons extends JavaPlugin {
         cmd.setTabCompleter(tabCompleter);
     }
 
-    public void eventRegister(Listener listener) {
-        getServer().getPluginManager().registerEvents(listener, instance);
-    }
+    public void addListener(Listener listener) { getServer().getPluginManager().registerEvents(listener, instance); }
 
-    public void eventUnregister(Listener listener) {
-        HandlerList.unregisterAll(listener);
-    }
+    public void removeListener(Listener listener) { HandlerList.unregisterAll(listener); }
 
     @Override
     public void onDisable() {

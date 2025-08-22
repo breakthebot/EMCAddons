@@ -19,7 +19,10 @@ package org.breakthebot.EMCAddons.events;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.breakthebot.EMCAddons.events.hideNSeek.HideUtils;
+import org.breakthebot.EMCAddons.events.tag.TagUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class MainUtils {
@@ -40,13 +43,6 @@ public class MainUtils {
         }
     }
 
-    public static void broadcastAdmins(Component msg) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!player.hasPermission("eventmanager.admin")) continue;
-            player.sendMessage(msg);
-        }
-    }
-
     public static void broadcastAdmins(String msg) {
         Component broadcastMessage = Component.text("[Admin Broadcast] ")
                 .color(NamedTextColor.BLUE)
@@ -55,5 +51,13 @@ public class MainUtils {
             if (!player.hasPermission("eventmanager.admin")) continue;
             player.sendMessage(broadcastMessage);
         }
+    }
+
+    public static boolean allowTabComplete(CommandSender sender) {
+        return HideUtils.allowTabComplete(sender) ||
+                TagUtils.allowTabComplete(sender) ||
+                sender.hasPermission("eventmanager.admin") ||
+                sender.hasPermission("eventmanager.broadcast") ||
+                sender.hasPermission("eventmanager.list");
     }
 }

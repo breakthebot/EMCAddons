@@ -40,6 +40,11 @@ import java.util.stream.Stream;
 public class HideCMD {
 
     public static boolean execute(@NotNull Player player, @NotNull String @NotNull [] args) {
+        if (!HideUtils.allowTabComplete(player)) {
+            player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return false;
+        }
+
         if (args.length == 0) {
             player.sendMessage(Component.text("Usage: /em hide-n-seek <start|end|player|hunter|giveall|status>").color(NamedTextColor.RED));
             return false;
@@ -95,8 +100,9 @@ public class HideCMD {
         if (args.length == 3 && perms.contains(args[0].toLowerCase())) {
             if (args[0].equalsIgnoreCase("player") || args[0].equalsIgnoreCase("hunter")) {
                 if (args[1].equalsIgnoreCase("appeal")) {
-                    if (HideUtils.getCurrentEvent() == null) return List.of();
-                    return HideUtils.getCurrentEvent().getDisqualified().stream()
+                    HideNSeek current = HideNSeek.getInstance();
+                    if (current == null) return List.of();
+                    return current.getDisqualified().stream()
                             .map(Player::getName)
                             .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
                             .collect(Collectors.toList());
@@ -403,9 +409,8 @@ public class HideCMD {
         }
         player.sendMessage(Component.text("Gave item to " + targets.size() + " players.").color(NamedTextColor.GREEN));
 
-        Component log = Component.text(player.getName() + " gave " + itemInHand.getType()
-                        + " to " + targets.size() + " " + action.toLowerCase() + "s")
-                .color(NamedTextColor.BLUE);
+        String log = player.getName() + " gave " + itemInHand.getType()
+                        + " to " + targets.size() + " " + action.toLowerCase() + "s";
         MainUtils.broadcastAdmins(log);
     }
 
@@ -414,7 +419,7 @@ public class HideCMD {
             player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
             return;
         }
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) {
             player.sendMessage(Component.text("No ongoing event.").color(NamedTextColor.RED));
             return;

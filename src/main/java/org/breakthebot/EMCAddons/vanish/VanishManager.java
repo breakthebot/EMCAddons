@@ -17,6 +17,8 @@ package org.breakthebot.EMCAddons.vanish;
  * along with EMCAddons. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -44,7 +46,7 @@ public class VanishManager {
 
     public static void vanish(Player staff) {
         if (!checkAllowed(staff)) {
-            staff.sendMessage("§cYou do not have permission to go into vanish.");
+            staff.sendMessage(Component.text("You do not have permission to go into vanish.").color(NamedTextColor.RED));
             return;
         }
         int total = 0;
@@ -54,14 +56,14 @@ public class VanishManager {
                 total++;
             }
         }
-        staff.sendMessage("§aYou are now vanished to " + total + " players.");
+        staff.sendMessage(Component.text("You are now vanished to " + total + " players.").color(NamedTextColor.GREEN));
     }
 
     public static void reveal(Player staff) {
         for (Player online : Bukkit.getOnlinePlayers()) {
             online.showPlayer(plugin, staff);
         }
-        staff.sendMessage("§aYou are now visible to players.");
+        staff.sendMessage(Component.text("You are now visible to players.").color(NamedTextColor.GREEN));
     }
 
     public static void handleJoin(Player player) {

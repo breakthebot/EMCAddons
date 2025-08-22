@@ -52,16 +52,16 @@ public class HideNSeek extends BaseEvent {
     @Override
     protected void onStart() {
         this.listenerInstance = new HideListeners();
-        EMCAddons.getInstance().eventRegister(this.listenerInstance);
+        EMCAddons.getInstance().addListener(this.listenerInstance);
     }
 
     @Override
     protected void onEnd() {
         HideUtils.sendSummary(this);
-        EMCAddons.getInstance().eventUnregister(this.getListenerInstance());
-        HideListeners.clearArrays();
+        EMCAddons.getInstance().removeListener(this.getListenerInstance());
         instance = null;
 
+        HideListeners.clearArrays();
         players.clear();
         hunters.clear();
         disqualified.clear();
@@ -87,4 +87,6 @@ public class HideNSeek extends BaseEvent {
     public boolean isDisqualified(UUID uuid) { return this.disqualified.contains(uuid); }
     public boolean isDisqualified(Player player) { return this.disqualified.contains(player.getUniqueId()); }
 
+
+    public void broadcastHunters(String msg) { broadcastAudience("[Hunter Broadcast] ", this.getHunters(), msg); }
 }

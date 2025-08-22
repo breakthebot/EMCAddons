@@ -26,17 +26,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class HideUtils {
 
-    public static @Nullable HideNSeek getCurrentEvent() {
-        return HideNSeek.getInstance();
-    }
-    
     public static boolean hasItems(Player player) {
         PlayerInventory inv = player.getInventory();
 
@@ -50,24 +45,6 @@ public class HideUtils {
         return hasInventoryItems || hasArmorItems || hasOffhandItem || hasCursorItem;
     }
 
-    public static void broadcastPlayers(HideNSeek current, String msg) {
-        Component broadcastMessage = Component.text("[Player Broadcast] ")
-                .color(NamedTextColor.BLUE)
-                .append(Component.text(msg).color(NamedTextColor.GREEN));
-        for (Player player : current.getPlayers()) {
-            player.sendMessage(broadcastMessage);
-        }
-    }
-
-    public static void broadcastHunters(HideNSeek current, String msg) {
-        Component broadcastMessage = Component.text("[Hunter Broadcast] ")
-                .color(NamedTextColor.BLUE)
-                .append(Component.text(msg).color(NamedTextColor.GREEN));
-        for (Player player : current.getHunters()) {
-            player.sendMessage(broadcastMessage);
-        }
-    }
-
     public static boolean allowTabComplete(CommandSender sender) {
         return sender.hasPermission("eventmanager.hide-n-seek") ||
                 sender.hasPermission("eventmanager.hide-n-seek.event.start") ||
@@ -78,10 +55,10 @@ public class HideUtils {
                 sender.hasPermission("eventmanager.hide-n-seek.status");
     }
 
-    public static void sendSummary(HideNSeek instance) {
-        List<Player> remainingPlayers = instance.getPlayers();
-        List<Player> disqualifiedPlayers = instance.getDisqualified();
-        List<Player> hunterPlayers = instance.getHunters();
+    public static void sendSummary(HideNSeek current) {
+        List<Player> remainingPlayers = current.getPlayers();
+        List<Player> disqualifiedPlayers = current.getDisqualified();
+        List<Player> hunterPlayers = current.getHunters();
 
         int remaining = remainingPlayers.size();
         int disqualified = disqualifiedPlayers.size();
@@ -115,8 +92,8 @@ public class HideUtils {
                 );
 
         MainUtils.broadcastGlobal(summary);
-        HideUtils.broadcastPlayers(instance, "Thank you for playing!");
-        HideUtils.broadcastHunters(instance, "Thank you for seeking!");
+        current.broadcastPlayers("Thank you for playing!");
+        current.broadcastHunters("Thank you for seeking!");
 
     }
     private static @NotNull Component getHover(String content, List<Player> players) {

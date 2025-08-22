@@ -71,7 +71,7 @@ public class HideListeners implements Listener {
             attacker = shooter;
         } else { return; }
 
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) return;
         if (current.isHunter(attacker)) return;
 
@@ -87,7 +87,7 @@ public class HideListeners implements Listener {
 
     @EventHandler
     public void onLogOff(PlayerQuitEvent event) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         Player player = event.getPlayer();
         if (current == null) return;
         if (!current.isPlayer(player)) return;
@@ -96,7 +96,7 @@ public class HideListeners implements Listener {
     }
 
     public static void handleDisqualified(UUID uuid) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) { return; }
 
         Player player = Bukkit.getPlayer(uuid);
@@ -113,8 +113,8 @@ public class HideListeners implements Listener {
             player.setHealth(0.0);
         }
 
-        HideUtils.broadcastPlayers(current, player.getName() + " was disqualified!");
-        HideUtils.broadcastHunters(current, player.getName() + " was disqualified!");
+        current.broadcastPlayers(player.getName() + " was disqualified!");
+        current.broadcastHunters(player.getName() + " was disqualified!");
 
         Location location = player.getLocation();
         location.getWorld().strikeLightningEffect(location);
@@ -130,7 +130,7 @@ public class HideListeners implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) { return; }
 
         Player player = event.getPlayer();
@@ -142,7 +142,7 @@ public class HideListeners implements Listener {
         if (recentRejoins.containsKey(uuid)) {
             long lastJoin = recentRejoins.get(uuid);
             if (now - lastJoin <= 5 * 60 * 1000) {
-                HideUtils.broadcastHunters(current, player.getName() + " has logged on twice in the past 5 minutes. \nUse /em player disqualify if caught cheating.");
+                current.broadcastHunters(player.getName() + " has logged on twice in the past 5 minutes. \nUse /em player disqualify if caught cheating.");
             }
         }
         recentRejoins.put(uuid, now);
@@ -160,7 +160,7 @@ public class HideListeners implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) return;
         if (!current.isPlayer(player)) return;
         if (!current.isDisqualified(player))  {
@@ -206,7 +206,7 @@ public class HideListeners implements Listener {
 
     @EventHandler
     public void onTeleport(SpawnEvent event) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) return;
         if (!current.isPlayer(event.getPlayer())) return;
         Town town = TownyAPI.getInstance().getTown(event.getFrom());
@@ -219,7 +219,7 @@ public class HideListeners implements Listener {
 
     @EventHandler
     public void onPlotChange(PlayerChangePlotEvent event) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) return;
         if (!current.isPlayer(event.getPlayer())) return;
         TownBlock origin = event.getFrom().getTownBlockOrNull();
@@ -238,7 +238,7 @@ public class HideListeners implements Listener {
 
     @EventHandler
     public void onECOpen(InventoryOpenEvent event) {
-        HideNSeek current = HideUtils.getCurrentEvent();
+        HideNSeek current = HideNSeek.getInstance();
         if (current == null) return;
 
         if (!(event.getPlayer() instanceof Player player)) return;

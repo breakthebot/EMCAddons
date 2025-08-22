@@ -24,7 +24,6 @@ import com.palmergames.bukkit.towny.object.TownyObject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -39,6 +38,10 @@ import java.util.stream.Stream;
 public class TagCMD {
 
     public static boolean execute(@NotNull Player player, @NotNull String @NotNull [] args) {
+        if (!TagUtils.allowTabComplete(player)) {
+            player.sendMessage(Component.text("You do not have permission to use this command.").color(NamedTextColor.RED));
+            return false;
+        }
         if (args.length == 0) {
             player.sendMessage(Component.text("Usage: /em tag <start|end|player|hunter|giveall|status>").color(NamedTextColor.RED));
             return false;
@@ -87,8 +90,9 @@ public class TagCMD {
         if (args.length == 3 && perms.contains(args[0].toLowerCase())) {
             if (args[0].equalsIgnoreCase("player")) {
                 if (args[1].equalsIgnoreCase("appeal")) {
-                    if (Tag.getInstance() == null) return List.of();
-                    return Tag.getInstance().getDisqualified().stream()
+                    Tag current = Tag.getInstance();
+                    if (current == null) return List.of();
+                    return current.getDisqualified().stream()
                             .map(Player::getName)
                             .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
                             .collect(Collectors.toList());

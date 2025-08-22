@@ -43,9 +43,7 @@ public abstract class BaseEvent {
     public boolean isPlayer(UUID uuid) { return this.players.contains(uuid); }
     public boolean isPlayer(Player player) { return this.getPlayers().contains(player); }
 
-    public List<Player> getPlayers() {
-        return getPlayersFromUUID(this.players);
-    }
+    public List<Player> getPlayers() { return getPlayersFromUUID(this.players); }
 
     public boolean getStarted() { return this.hasStarted; }
 
@@ -79,12 +77,14 @@ public abstract class BaseEvent {
         return players;
     }
 
-    public void broadcastPlayers(String msg) {
-        Component broadcastMessage = Component.text("[Player Broadcast] ")
+    public void broadcastPlayers(String msg) { broadcastAudience("[Player Broadcast] ", this.getPlayers(), msg); }
+
+    public void broadcastAudience(String brackets, List<Player> audience, String msg) {
+        Component broadcastMessage = Component.text(brackets)
                 .color(NamedTextColor.BLUE)
                 .append(Component.text(msg).color(NamedTextColor.GREEN));
 
-        for (Player player : this.getPlayers()) {
+        for (Player player : audience) {
             player.sendMessage(broadcastMessage);
         }
     }

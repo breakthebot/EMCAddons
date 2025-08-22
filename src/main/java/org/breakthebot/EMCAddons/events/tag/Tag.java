@@ -68,7 +68,7 @@ public class Tag extends BaseEvent {
     protected void onStart() {
         this.broadcastPlayers("Event has now started!");
         this.listenerInstance = new TagListeners();
-        EMCAddons.getInstance().eventRegister(this.listenerInstance);
+        EMCAddons.getInstance().addListener(this.listenerInstance);
 
         int totalPlayers = this.players.size();
         int numToTag = (int) Math.ceil(totalPlayers * 0.05);
@@ -88,7 +88,7 @@ public class Tag extends BaseEvent {
     @Override
     protected void onEnd() {
         TagUtils.sendSummary(instance);
-        EMCAddons.getInstance().eventUnregister(this.listenerInstance);
+        EMCAddons.getInstance().removeListener(this.listenerInstance);
         for (Player player : getTagged()) {
             TagUtils.removeGlow(player);
         }
