@@ -20,6 +20,8 @@ package org.breakthebot.EMCAddons;
 import org.breakthebot.EMCAddons.events.MainCMD;
 import org.breakthebot.EMCAddons.events.hideNSeek.HideCMDAlias;
 import org.breakthebot.EMCAddons.events.tag.TagCMDAlias;
+import org.breakthebot.EMCAddons.superbreaker.superCMD;
+import org.breakthebot.EMCAddons.superbreaker.superUtils;
 import org.breakthebot.EMCAddons.vanish.VanishListeners;
 import org.breakthebot.EMCAddons.vanish.VanishManager;
 import org.bukkit.command.CommandExecutor;
@@ -42,6 +44,7 @@ public final class EMCAddons extends JavaPlugin {
         getLogger().info("Plugin started!");
         VanishManager.init(this);
         addListener(new VanishListeners());
+        addListener(new superUtils());
 
         MainCMD mainCMD = new MainCMD();
         commandRegister("eventmanager", mainCMD, mainCMD);
@@ -51,6 +54,9 @@ public final class EMCAddons extends JavaPlugin {
 
         TagCMDAlias tagCMDAlias = new TagCMDAlias();
         commandRegister("tag", tagCMDAlias, tagCMDAlias);
+
+        superCMD superCMD = new superCMD();
+        commandRegister("superbreak", superCMD, superCMD);
     }
 
     private void commandRegister(String name, CommandExecutor executor, TabCompleter tabCompleter) {
